@@ -1,0 +1,107 @@
+/* document normalization */
+
+html {
+    margin: 0px;
+    padding: 0px;
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    margin: 0px;
+    padding: 0px;
+    height: 100%;
+    width: 100%;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+}
+
+/* header */
+
+.banner {
+    background-color: #8C215B;
+    color: #fff;
+    padding: 1rem 1.5rem;
+}
+
+.banner h1 {
+    margin: 0.5rem 0rem 1rem 0rem;
+    padding: 0px;
+    font-weight: 200;
+    font-size: 3rem;
+}
+
+.banner p.lead {
+    margin: 0.5rem 0rem 1rem 0rem;
+    padding: 0px;
+    font-size: 1.25rem;
+}
+
+@media only screen and (min-width: 768px) {
+    .banner {
+        padding: 2rem 6rem;
+    }
+
+    .banner h1 {
+        font-size: 4rem;
+    }
+
+    .banner p.lead {
+        margin: 1rem 0rem 2rem 0rem;
+        font-size: 1.5rem;
+    }
+}
+
+
+/* demo components */
+
+.content {
+    margin: 1rem 2rem;
+}
+
+.card {
+    margin: 2rem 0rem;
+}
+
+.well {
+    padding: 0.2rem 1rem;
+    background-color: #eee;
+    border-radius: 5px;
+}
+
+@media only screen and (min-width: 768px) {
+    .content {
+        margin: 4rem 8rem;
+    }
+
+    .well {
+        padding: 0.5rem 2rem;
+    }
+}
+
+/* form */
+
+select {
+    margin: 5px 0px;
+    padding: 2px 15px;
+    border: 1px solid #8C215B;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+input {
+    padding: 5px 15px;
+    border: 1px solid #8C215B;
+    border-radius: 5px;
+    font-size: 1.5rem;
+}
+
+#demo-input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#demo-submit {
+    margin: 5px 0px 5px 0px;
+    background-color: #8C215B;
+    color: #fff;
+}

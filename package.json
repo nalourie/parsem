@@ -1,0 +1,19 @@
+{
+  "name": "parsem",
+  "version": "0.0.1",
+  "description": "Semantic parsing for the browser.",
+  "main": "app.js",
+  "scripts": {
+    "build": "webpack",
+    "serve": "webpack --watch & live-server ./build"
+  },
+  "author": "Nicholas A. Lourie <contactnick@nicholaslourie.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-latest": "^6.24.1",
+    "copy-webpack-plugin": "^4.2.3",
+    "webpack": "^3.8.1"
+  }
+}

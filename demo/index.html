@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Pars' 'Em Demo</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Demo page for parsem, a semantic parser for the browser.">
+    <meta name="author" content="Nicholas Lourie">
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+  </head>
+  <body>
+
+    <div class="banner">
+      <h1>Pars' 'Em!</h1>
+      <p class="lead">Semantic parsing for the browser.</p>
+    </div>
+
+    <div class="content">
+      <div id="demo-description" class="card">
+        <p>
+          Pars' 'Em is a JavaScript semantic parsing framework.
+          It provides you with a minimal set of tools for building
+          semantic parsers that can run in the browser &mdash;
+          transforming natural language text into structured
+          representations on which you can compute.
+        </p>
+
+        <p>
+          Try out the demo below!
+        </p>
+
+        <a href="https://github.com/nalourie/parsem">Github Repo</a>
+      </div>
+
+      <div id="demo-form" class="card">
+        <form>
+          <select id="demo-select-parser"></select>
+          <input id="demo-input" name="parse-text" type="text">
+          <input id="demo-submit" type="submit" value="Parse!">
+        </form>
+      </div>
+
+      <div id="results" class="card">
+        <div class="well">
+          <p>
+            <strong>Input:</strong>
+            <span id="question">The input text will go here.</span>
+          </p>
+          <p>
+            <strong>Interpretations:</strong>
+            <span id="answer">Different possible computed semantics of the text will go here.</span>
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <script src="./bundle.js"></script>
+    <script>
+      function demoParser(e) {
+        e.preventDefault();
+
+        // fetch input and compute semantics
+        var parser = document.getElementById("demo-select-parser").value;
+        var text = document.getElementById("demo-input").value;
+        var result = Array.from(
+            new Set(
+              parsers[parser]
+                .parse(text)
+                .map(d => d.computeDenotation())
+            )
+          )
+          .join(", ") || "Sorry, I didn't understand.";
+
+        // clear the input
+        document.getElementById("demo-input").value = "";
+
+        // display the result
+        document.getElementById("question").innerHTML = text;
+        document.getElementById("answer").innerHTML = result;
+
+        return false;
+      }
+
+      // add the parsers to the select field
+      var parserNames = Object.getOwnPropertyNames(parsers);
+      for (var i = 0; i < parserNames.length; i++) {
+        var parserName = parserNames[i]
+        var parserOption = document.createElement('option');
+        parserOption.value = parserName;
+        parserOption.innerHTML = parserName;
+        document.getElementById("demo-select-parser").appendChild(parserOption);
+      }
+
+      // add an example to the demo input
+      document.getElementById("demo-input").value = "How much is six times seven?";
+
+      // attach demoParser to the demo form
+      document.getElementById("demo-form").addEventListener(
+        "submit",
+        demoParser
+      );
+    </script>
+  </body>
+</html>
