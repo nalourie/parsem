@@ -1,2 +1,6 @@
-# vendored dependencies
+# build files
+build/
+
+# npm and node
+package-lock.json
 node_modules/
