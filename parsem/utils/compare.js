@@ -53,8 +53,8 @@ suite('compare', [
 
 
 /**
- * equal
- * =====
+ * equal : (Any, Any) => Boolean
+ * =============================
  * Return true if the objects are equal, false otherwise.
  *
  * Compare objects and arrays recursively for equality.
@@ -63,10 +63,6 @@ suite('compare', [
  * @param {Object} right - one of the objects to compare.
  */
 function equal(left, right) {
-    if (left.constructor !== right.constructor) {
-        return false;
-    }
-
     if (isType(left, Array) && isType(right, Array)) {
         if (left.length !== right.length) {
             return false;
@@ -87,6 +83,24 @@ function equal(left, right) {
 }
 suite('compare', [
     test('equal', function () {
+        // undefined
+        check(
+            "equal should work for undefined and undefined.",
+            equal(undefined, undefined)
+        );
+        check(
+            "equal should work for undefined and a string.",
+            !equal(undefined, "a")
+        );
+        // null
+        check(
+            "equal should work for null and null.",
+            equal(null, null)
+        );
+        check(
+            "equal should work for null and a string.",
+            !equal(null, "a")
+        );
         // strings
         check(
             "equal should work for equal strings.",
