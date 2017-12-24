@@ -67,16 +67,27 @@ const digitData = [
  */
 class DigitParser extends Parser {
     constructor(roots) {
-        super(roots)
+        super(roots);
 
         // methods
 
         this.parse = (s, roots = this.roots) => {
-            const num = parseFloat(s);
-            return isNaN(num) ? [] : [new NumberParse(s, () => num)];
+            let parses;
+            if (this.numRegex.test(s)) {
+                const num = parseFloat(s.replace(',', ''));
+                parses = [new NumberParse(s, () => num)];
+            } else {
+                parses = [];
+            }
+            return parses;
         }
 
         // attributes
+
+        // match numers that either are in comma separated form or have
+        // no commas, and that optionally have a decimal point, and
+        // optionally have a punction mark (.,?!;) at the end.
+        this.numRegex = /^(\d{1,3}(\,\d{3})*|\d+)?(\.\d*)?[.,?!;]?$/
     }
 }
 const digitParser = new DigitParser(["$Number"]);
