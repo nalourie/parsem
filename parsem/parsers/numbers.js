@@ -378,9 +378,273 @@ suite('numbers', [
 ]);
 
 
+/**
+ * ordinalData : Array[(String, Int)]
+ * ==================================
+ * An array of data for parsing ordinals.
+ *
+ * `ordinalData` contains utterance - denotation pairs for strings
+ * representing ordinals written out using natural language.
+ */
+const ordinalData = [
+    ["first", 1],
+    ["second", 2],
+    ["third", 3],
+    ["fifth", 5],
+    ["thirteenth", 13],
+    ["sixty third", 63],
+    ["one hundredth", 100],
+    ["a hundredth", 100],
+    ["three hundred sixty fifth", 365],
+    ["one thousand two hundred and seventy sixth", 1276],
+    ["a hundred and thirty second", 132],
+    ["negative thirty fifth", -35],
+    ["five thousand two hundredth", 5200],
+    ["five thousand and two hundred sixty second", 5262]
+];
+
+
+/**
+ * ordinalParser
+ * =============
+ * A parser for ordinal numbers written as text.
+ *
+ * `ordinalParser` can parse inputs such as `first` or `twenty fifth`.
+ */
+const ordinalParser = new Grammar(
+    ["$Ordinal"],
+    basicTokenizer,
+    [numberParser],
+    [
+        // define the root symbols
+        new Rule(
+            'root',
+            '$Ordinal', '$Ord',
+            x => x
+        ),
+        new Rule(
+            'rootPostive',
+            '$Ordinal', 'positive $Ord',
+            (x, y) => y
+        ),
+        new Rule(
+            'rootNegative',
+            '$Ordinal', 'negative $Ord',
+            (x, y) => -y
+        ),
+        // lexical rules
+        //   special lexical rules
+        new Rule(
+            'a',
+            '$Article', 'a',
+            () => null
+        ),
+        new Rule(
+            'an',
+            '$Article', 'an',
+            () => null
+        ),
+        //   ordinals
+        new Rule(
+            'zeroth',
+            '$Ord', 'zeroth',
+            () => 0
+        ),
+        new Rule(
+            'first',
+            '$Ord', 'first',
+            () => 1
+        ),
+        new Rule(
+            'second',
+            '$Ord', 'second',
+            () => 2
+        ),
+        new Rule(
+            'third',
+            '$Ord', 'third',
+            () => 3
+        ),
+        new Rule(
+            'fourth',
+            '$Ord', 'fourth',
+            () => 4
+        ),
+        new Rule(
+            'fifth',
+            '$Ord', 'fifth',
+            () => 5
+        ),
+        new Rule(
+            'sixth',
+            '$Ord', 'sixth',
+            () => 6
+        ),
+        new Rule(
+            'seventh',
+            '$Ord', 'seventh',
+            () => 7
+        ),
+        new Rule(
+            'eighth',
+            '$Ord', 'eighth',
+            () => 8
+        ),
+        new Rule(
+            'ninth',
+            '$Ord', 'ninth',
+            () => 9
+        ),
+        new Rule(
+            'tenth',
+            '$Ord', 'tenth',
+            () => 10
+        ),
+        new Rule(
+            'eleventh',
+            '$Ord', 'eleventh',
+            () => 11
+        ),
+        new Rule(
+            'twelfth',
+            '$Ord', 'twelfth',
+            () => 12
+        ),
+        new Rule(
+            'thirteenth',
+            '$Ord', 'thirteenth',
+            () => 13
+        ),
+        new Rule(
+            'fourteenth',
+            '$Ord', 'fourteenth',
+            () => 14
+        ),
+        new Rule(
+            'fifteenth',
+            '$Ord', 'fifteenth',
+            () => 15
+        ),
+        new Rule(
+            'sixteenth',
+            '$Ord', 'sixteenth',
+            () => 16
+        ),
+        new Rule(
+            'seventeenth',
+            '$Ord', 'seventeenth',
+            () => 17
+        ),
+        new Rule(
+            'eighteenth',
+            '$Ord', 'eighteenth',
+            () => 18
+        ),
+        new Rule(
+            'nineteenth',
+            '$Ord', 'nineteenth',
+            () => 19
+        ),
+        new Rule(
+            'twentieth',
+            '$Ord', 'twentieth',
+            () => 20
+        ),
+        new Rule(
+            'thirteith',
+            '$Ord', 'thirtieth',
+            () => 30
+        ),
+        new Rule(
+            'fourtieth',
+            '$Ord', 'fourtieth',
+            () => 40
+        ),
+        new Rule(
+            'fiftieth',
+            '$Ord', 'fiftieth',
+            () => 50
+        ),
+        new Rule(
+            'sixtieth',
+            '$Ord', 'sixtieth',
+            () => 60
+        ),
+        new Rule(
+            'seventieth',
+            '$Ord', 'seventieth',
+            () => 70
+        ),
+        new Rule(
+            'eightieth',
+            '$Ord', 'eightieth',
+            () => 80
+        ),
+        new Rule(
+            'ninetieth',
+            '$Ord', 'ninetieth',
+            () => 90
+        ),
+        new Rule(
+            'hundredth',
+            '$MultiplyOrd', 'hundredth',
+            () => 100
+        ),
+        new Rule(
+            'thousandth',
+            '$MultiplyOrd', 'thousandth',
+            () => 1000
+        ),
+        new Rule(
+            'millionth',
+            '$MultiplyOrd', 'millionth',
+            () => 1000000
+        ),
+        new Rule(
+            'billionth',
+            '$MultiplyOrd', 'billionth',
+            () => 1000000000
+        ),
+        // compositional rules
+        new Rule(
+            'numberAndOrdinal',
+            '$Ord', '$Number ?and $Ord',
+            (x, y, z) => x + z
+        ),
+        new Rule(
+            'numberAndMultiplier',
+            '$Ord', '$Number $MultiplyOrd',
+            (x, y) => x * y
+        ),
+        new Rule(
+            'articleAndOrdinal',
+            '$Ord', '$Article $Ord',
+            (x, y) => y
+        ),
+        new Rule(
+            'articleAndMultiply',
+            '$Ord', '$Article $MultiplyOrd',
+            (x, y) => y
+        )
+
+    ]
+);
+suite('numbers', [
+    test('ordinalParser.parse', function () {
+        checkParser(
+            'ordinalParser',
+            ordinalParser,
+            ordinalData,
+            10
+        );
+    })
+]);
+
+
 export {
     NumberParse,
     DigitParser,
     digitParser,
-    numberParser
+    numberParser,
+    ordinalParser
 };
