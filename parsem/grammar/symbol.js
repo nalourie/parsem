@@ -1,6 +1,10 @@
 /* functions for working with symbols in production rules. */
 
-import { check } from '../utils/test';
+import {
+    check,
+    suite,
+    test
+} from '../utils/test';
 
 
 // predicates for symbols
@@ -14,14 +18,18 @@ import { check } from '../utils/test';
 function isTerminal(s) {
     return s.charAt(0) != '$' || s.length <= 1;
 }
-check(
-    "isTerminal should return true if string is not a terminal.",
-    isTerminal('foo')
-);
-check(
-    "isTerminal should return false if string is a non-terminal.",
-    !isTerminal('$foo')
-);
+suite('symbol', [
+    test('isTerminal', function () {
+        check(
+            "isTerminal should return true if string is not a terminal.",
+            isTerminal('foo')
+        );
+        check(
+            "isTerminal should return false if string is a non-terminal.",
+            !isTerminal('$foo')
+        );
+    })
+]);
 
 
 /**
@@ -33,18 +41,22 @@ check(
 function isNonTerminal(s) {
     return !isTerminal(s);
 }
-check(
-    "isNonTerminal should return true if string is a non-terminal.",
-    isNonTerminal('$a')
-);
-check(
-    "isNonTerminal should return false if string is too short.",
-    !isNonTerminal('$')
-);
-check(
-    "isNonTerminal should return false if string is not a non-terminal.",
-    !isNonTerminal('foo')
-);
+suite('symbol', [
+    test('isNonTerminal', function () {
+        check(
+            "isNonTerminal should return true if string is a non-terminal.",
+            isNonTerminal('$a')
+        );
+        check(
+            "isNonTerminal should return false if string is too short.",
+            !isNonTerminal('$')
+        );
+        check(
+            "isNonTerminal should return false if string is not a non-terminal.",
+            !isNonTerminal('foo')
+        );
+    })
+]);
 
 
 /**
@@ -58,18 +70,22 @@ check(
 function isOptional(s) {
     return s.charAt(0) == '?' && s.length > 1;
 }
-check(
-    "isOptional should return true if string is an optional.",
-    isOptional('?a')
-);
-check(
-    "isOptional should return false if string is too short.",
-    !isOptional('?')
-);
-check(
-    "isOptional should return false if string is not an optional.",
-    !isOptional('foo')
-);
+suite('symbol', [
+    test('isOptional', function () {
+        check(
+            "isOptional should return true if string is an optional.",
+            isOptional('?a')
+        );
+        check(
+            "isOptional should return false if string is too short.",
+            !isOptional('?')
+        );
+        check(
+            "isOptional should return false if string is not an optional.",
+            !isOptional('foo')
+        );
+    })
+]);
 
 
 // functions for modifying symbols
@@ -86,22 +102,26 @@ check(
 function stripOptional(s) {
     return isOptional(s) ? s.slice(1) : s
 }
-check(
-    "stripOptional should strip the optional from a terminal.",
-    stripOptional("?say") === "say"
-);
-check(
-    "stripOptional should strip the optional from a non-terminal.",
-    stripOptional("?$say") === "$say"
-);
-check(
-    "stripOptional should return s if it's a non-optional terminal.",
-    stripOptional("say") === "say"
-);
-check(
-    "stripOptional should return s if it's non-optional non-terminal.",
-    stripOptional("$say") === "$say"
-);
+suite('symbol', [
+    test('stripOptional', function () {
+        check(
+            "stripOptional should strip the optional from a terminal.",
+            stripOptional("?say") === "say"
+        );
+        check(
+            "stripOptional should strip the optional from a non-terminal.",
+            stripOptional("?$say") === "$say"
+        );
+        check(
+            "stripOptional should return s if it's a non-optional terminal.",
+            stripOptional("say") === "say"
+        );
+        check(
+            "stripOptional should return s if it's non-optional non-terminal.",
+            stripOptional("$say") === "$say"
+        );
+    })
+]);
 
 
 export {

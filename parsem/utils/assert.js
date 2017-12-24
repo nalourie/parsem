@@ -1,7 +1,12 @@
 /* utilities for making assertions. */
 
 import { BaseError } from './error';
-import { check, checkRaises } from './test';
+import {
+    check,
+    checkRaises,
+    suite,
+    test
+} from './test';
 
 
 /**
@@ -29,14 +34,18 @@ function assert(condition, message) {
         throw new AssertionError(message);
     }
 }
-checkRaises(
-    "assert should raise assertion errors when condition is false.",
-    function(){
-        assert(false, "This message should print to check the 'assert' function.")
-    },
-    AssertionError
-);
-assert(true, "This message should not print.")
+suite('assert', [
+    test('assert', function () {
+        checkRaises(
+            "assert should raise assertion errors when condition is false.",
+            function(){
+                assert(false, "This message should print to check the 'assert' function.")
+            },
+            AssertionError
+        );
+        assert(true, "This message should not print.")
+    })
+]);
 
 
 export {

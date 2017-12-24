@@ -2,7 +2,11 @@
 
 import { assert } from '../utils/assert';
 import { isType } from '../utils/compare';
-import { check } from '../utils/test';
+import {
+    check,
+    suite,
+    test
+} from '../utils/test';
 import { Tokenizer } from '../tokenize/tokenize';
 import { Parser } from '../parse/parse';
 import {

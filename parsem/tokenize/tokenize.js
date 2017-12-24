@@ -8,7 +8,11 @@ import {
     isType,
     equal
 } from '../utils/compare';
-import { check } from '../utils/test';
+import {
+    check,
+    suite,
+    test
+} from '../utils/test';
 
 
 /**
@@ -191,58 +195,62 @@ const basicTokenizer = new BasicTokenizer(
     /\s+/,
     [c => c.toLowerCase()]
 );
-check(
-    "basicTokenizer.tokenize should return an empty array on the empty string.",
-    equal(
-        basicTokenizer.tokenize(""),
-        []
-    )
-);
-check(
-    "basicTokenizer.tokenize should tokenize one token correctly.",
-    equal(
-        basicTokenizer.tokenize("one"),
-        [new Token("one", [0,3])]
-    )
-);
-check(
-    "basicTokenizer.tokenize should tokenize multiple tokens correctly.",
-    equal(
-        basicTokenizer.tokenize("one two three"),
-        [
-            new Token("one", [0,3]),
-            new Token("two", [4,7]),
-            new Token("three", [8,13])
-        ]
-    )
-);
-check(
-    "basicTokenizer.tokenize should remove punctuation.",
-    equal(
-        basicTokenizer.tokenize("hello!"),
-        [new Token("hello", [0,6])]
-    )
-);
-check(
-    "basicTokenizer.tokenize should transform to lowercase.",
-    equal(
-        basicTokenizer.tokenize("All CAPS"),
-        [
-            new Token("all", [0,3]),
-            new Token("caps", [4,8])
-        ]
-    )
-);
-check(
-    "basicTokenizer.tokenize should strip whitespace.",
-    equal(
-        basicTokenizer.tokenize("A \n  string  "),
-        [
-            new Token("a", [0, 1]),
-            new Token("string", [5,11])
-        ]
-    )
-);
+suite('tokenize', [
+    test('basicTokenizer.tokenize', function () {
+        check(
+            "basicTokenizer.tokenize should return an empty array on the empty string.",
+            equal(
+                basicTokenizer.tokenize(""),
+                []
+            )
+        );
+        check(
+            "basicTokenizer.tokenize should tokenize one token correctly.",
+            equal(
+                basicTokenizer.tokenize("one"),
+                [new Token("one", [0,3])]
+            )
+        );
+        check(
+            "basicTokenizer.tokenize should tokenize multiple tokens correctly.",
+            equal(
+                basicTokenizer.tokenize("one two three"),
+                [
+                    new Token("one", [0,3]),
+                    new Token("two", [4,7]),
+                    new Token("three", [8,13])
+                ]
+            )
+        );
+        check(
+            "basicTokenizer.tokenize should remove punctuation.",
+            equal(
+                basicTokenizer.tokenize("hello!"),
+                [new Token("hello", [0,6])]
+            )
+        );
+        check(
+            "basicTokenizer.tokenize should transform to lowercase.",
+            equal(
+                basicTokenizer.tokenize("All CAPS"),
+                [
+                    new Token("all", [0,3]),
+                    new Token("caps", [4,8])
+                ]
+            )
+        );
+        check(
+            "basicTokenizer.tokenize should strip whitespace.",
+            equal(
+                basicTokenizer.tokenize("A \n  string  "),
+                [
+                    new Token("a", [0, 1]),
+                    new Token("string", [5,11])
+                ]
+            )
+        );
+    })
+]);
 
 
 export {

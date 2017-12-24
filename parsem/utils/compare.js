@@ -1,6 +1,11 @@
 /* comparison, typing and equality utilities. */
 
-import { check, checkRaises } from './test';
+import {
+    check,
+    checkRaises,
+    suite,
+    test
+} from './test';
 
 
 /**
@@ -25,22 +30,26 @@ function isType(instance, type) {
             && instance.constructor === type
     );
 }
-check(
-    "isType should always return false on undefined.",
-    !isType(undefined, undefined)
-);
-check(
-    "isType should always return false on null.",
-    !isType(null, null)
-);
-check(
-    "isType should correctly identify a type.",
-    isType("foo", String)
-);
-check(
-    "isType should say when something is not a type.",
-    !isType("foo", Boolean)
-);
+suite('compare', [
+    test('isType', function () {
+        check(
+            "isType should always return false on undefined.",
+            !isType(undefined, undefined)
+        );
+        check(
+            "isType should always return false on null.",
+            !isType(null, null)
+        );
+        check(
+            "isType should correctly identify a type.",
+            isType("foo", String)
+        );
+        check(
+            "isType should say when something is not a type.",
+            !isType("foo", Boolean)
+        );
+    })
+]);
 
 
 /**
@@ -76,66 +85,75 @@ function equal(left, right) {
         return left === right;
     }
 }
-check(
-    "equal should work for equal strings.",
-    equal("a", "a")
-);
-check(
-    "equal should work for unequal strings.",
-    !equal("a", "b")
-);
-check(
-    "equal should work for equal ints.",
-    equal(1, 1)
-);
-check(
-    "equal should work for unequal ints.",
-    !equal(1, 2)
-);
-check(
-    "equal should work for equal booleans.",
-    equal(true, true)
-);
-check(
-    "equal should work for unequal booleans.",
-    !equal(true, false)
-);
-check(
-    "equal should work for equal arrays.",
-    equal([1, 2], [1, 2])
-);
-check(
-    "equal should work for unequal arrays.",
-    !equal([1, 2], [1, 1])
-);
-check(
-    "equal should work for unequal arrays of different lengths.",
-    !equal([1, 2], [1, 2, 3])
-);
-check(
-    "equal should work for equal nested arrays.",
-    equal([1, [1]], [1, [1]])
-);
-check(
-    "equal should work for unequal nested arrays",
-    !equal([1, [1]], [1, [1, 2]])
-);
-check(
-    "equal should work for equal objects.",
-    equal({"a": 1}, {"a": 1})
-);
-check(
-    "equal should work for unequal objects.",
-    !equal({"a": 1}, {"a": 2})
-);
-check(
-    "equal should work for equal nested objects.",
-    equal({"a": {"b": 1}}, {"a": {"b": 1}})
-);
-check(
-    "equal should work for unequal nested objects.",
-    !equal({"a": {"b": 1}}, {"a": {"b": 2}})
-);
+suite('compare', [
+    test('equal', function () {
+        // strings
+        check(
+            "equal should work for equal strings.",
+            equal("a", "a")
+        );
+        check(
+            "equal should work for unequal strings.",
+            !equal("a", "b")
+        );
+        // ints
+        check(
+            "equal should work for equal ints.",
+            equal(1, 1)
+        );
+        check(
+            "equal should work for unequal ints.",
+            !equal(1, 2)
+        );
+        // booleans
+        check(
+            "equal should work for equal booleans.",
+            equal(true, true)
+        );
+        check(
+            "equal should work for unequal booleans.",
+            !equal(true, false)
+        );
+        // arrays
+        check(
+            "equal should work for equal arrays.",
+            equal([1, 2], [1, 2])
+        );
+        check(
+            "equal should work for unequal arrays.",
+            !equal([1, 2], [1, 1])
+        );
+        check(
+            "equal should work for unequal arrays of different lengths.",
+            !equal([1, 2], [1, 2, 3])
+        );
+        check(
+            "equal should work for equal nested arrays.",
+            equal([1, [1]], [1, [1]])
+        );
+        check(
+            "equal should work for unequal nested arrays",
+            !equal([1, [1]], [1, [1, 2]])
+        );
+        // objects
+        check(
+            "equal should work for equal objects.",
+            equal({"a": 1}, {"a": 1})
+        );
+        check(
+            "equal should work for unequal objects.",
+            !equal({"a": 1}, {"a": 2})
+        );
+        check(
+            "equal should work for equal nested objects.",
+            equal({"a": {"b": 1}}, {"a": {"b": 1}})
+        );
+        check(
+            "equal should work for unequal nested objects.",
+            !equal({"a": {"b": 1}}, {"a": {"b": 2}})
+        );
+    })
+]);
 
 
 export { isType, equal };

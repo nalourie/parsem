@@ -1,6 +1,10 @@
 /* parsers for parsing numbers. */
 
-import { check } from '../utils/test';
+import {
+    check,
+    suite,
+    test
+} from '../utils/test';
 import { Parse, Parser } from '../parse/parse';
 
 import { basicTokenizer } from '../tokenize/tokenize';
@@ -54,46 +58,50 @@ class DigitParser extends Parser {
     }
 }
 const digitParser = new DigitParser(["$Number"]);
-check(
-    "digitParser.parse should produce only one parse for an integer.",
-    digitParser.parse("12").length === 1
-);
-check(
-    "digitParser.parse should correctly parse an integer.",
-    digitParser.parse("12")[0].computeDenotation() === 12
-);
-check(
-    "digitParser.parse should produce only one parse for a decimal.",
-    digitParser.parse("12.643").length === 1
-);
-check(
-    "digitParser.parse should correctly parse a decimal.",
-    digitParser.parse("12.643")[0].computeDenotation() === 12.643
-);
-check(
-    "digitParser.parse should not parse numbers with trailing characters.",
-    digitParser.parse("12a").length === 0
-);
-check(
-    "digitParser.parse should not parse numbers with leading characters.",
-    digitParser.parse("b12").length === 0
-);
-check(
-    "digitParser.parse should not parse numbers with spaces.",
-    digitParser.parse("12 1").length === 0
-);
-check(
-    "digitParser.parse should not parse non-numbers.",
-    digitParser.parse("foo").length === 0
-);
-check(
-    "digitParser.parse should handle commas.",
-    digitParser.parse("12,000").length === 1
-);
-check(
-    "digitParser.parse should parse integers with commas.",
-    digitParser.parse("12,000")[0].computeDenotation() === 12000
-);
+suite('numbers', [
+    test('digitParser.parse', function () {
+        check(
+            "digitParser.parse should produce only one parse for an integer.",
+            digitParser.parse("12").length === 1
+        );
+        check(
+            "digitParser.parse should correctly parse an integer.",
+            digitParser.parse("12")[0].computeDenotation() === 12
+        );
+        check(
+            "digitParser.parse should produce only one parse for a decimal.",
+            digitParser.parse("12.643").length === 1
+        );
+        check(
+            "digitParser.parse should correctly parse a decimal.",
+            digitParser.parse("12.643")[0].computeDenotation() === 12.643
+        );
+        check(
+            "digitParser.parse should not parse numbers with trailing characters.",
+            digitParser.parse("12a").length === 0
+        );
+        check(
+            "digitParser.parse should not parse numbers with leading characters.",
+            digitParser.parse("b12").length === 0
+        );
+        check(
+            "digitParser.parse should not parse numbers with spaces.",
+            digitParser.parse("12 1").length === 0
+        );
+        check(
+            "digitParser.parse should not parse non-numbers.",
+            digitParser.parse("foo").length === 0
+        );
+        check(
+            "digitParser.parse should handle commas.",
+            digitParser.parse("12,000").length === 1
+        );
+        check(
+            "digitParser.parse should parse integers with commas.",
+            digitParser.parse("12,000")[0].computeDenotation() === 12000
+        );
+    })
+]);
 
 
 /**
@@ -310,62 +318,66 @@ const numberParser = new Grammar(
         )
     ]
 );
-check(
-    "numberParser.parse should correctly parse one.",
-    numberParser.parse("one")[0].computeDenotation() === 1
-);
-check(
-    "numberParser.parse should correctly parse two.",
-    numberParser.parse("two")[0].computeDenotation() === 2
-);
-check(
-    "numberParser.parse should correctly parse three.",
-    numberParser.parse("three")[0].computeDenotation() === 3
-);
-check(
-    "numberParser.parse should correctly parse five.",
-    numberParser.parse("five")[0].computeDenotation() === 5
-);
-check(
-    "numberParser.parse should correctly parse thirteen.",
-    numberParser.parse("thirteen")[0].computeDenotation() === 13
-);
-check(
-    "numberParser.parse should correctly parse sixty three.",
-    numberParser.parse("sixty three")[0].computeDenotation() === 63
-);
-check(
-    "numberParser.parse should correctly parse one hundred.",
-    numberParser.parse("one hundred")[0].computeDenotation() === 100
-);
-check(
-    "numberParser.parse should correctly parse a hundred.",
-    numberParser.parse("a hundred")[0].computeDenotation() === 100
-);
-check(
-    "numberParser.parse should correctly parse three hundred sixty five.",
-    numberParser.parse("three hundred sixty five")[0].computeDenotation() === 365
-);
-check(
-    "numberParser.parse should correctly parse one thousand two hundred and seventy six.",
-    numberParser.parse("one thousand two hundred and seventy six")[0].computeDenotation() === 1276
-);
-check(
-    "numberParser.parse should correctly parse a hundred and thirty two.",
-    numberParser.parse("a hundred and thirty two")[0].computeDenotation() === 132
-);
-check(
-    "numberParser.parse should correctly parse negative thirty five.",
-    numberParser.parse("negative thirty five")[0].computeDenotation() === -35
-);
-check(
-    "numberParser.parse should correctly parse five thousand two hundred.",
-    numberParser.parse("five thousand two hundred")[0].computeDenotation() === 5200
-);
-check(
-    "numberParser.parse should correctly parse five thousand and two hundred sixty two.",
-    numberParser.parse("five thousand and two hundred sixty two")[0].computeDenotation() === 5262
-);
+suite('numbers', [
+    test('numberParser.parse', function () {
+        check(
+            "numberParser.parse should correctly parse one.",
+            numberParser.parse("one")[0].computeDenotation() === 1
+        );
+        check(
+            "numberParser.parse should correctly parse two.",
+            numberParser.parse("two")[0].computeDenotation() === 2
+        );
+        check(
+            "numberParser.parse should correctly parse three.",
+            numberParser.parse("three")[0].computeDenotation() === 3
+        );
+        check(
+            "numberParser.parse should correctly parse five.",
+            numberParser.parse("five")[0].computeDenotation() === 5
+        );
+        check(
+            "numberParser.parse should correctly parse thirteen.",
+            numberParser.parse("thirteen")[0].computeDenotation() === 13
+        );
+        check(
+            "numberParser.parse should correctly parse sixty three.",
+            numberParser.parse("sixty three")[0].computeDenotation() === 63
+        );
+        check(
+            "numberParser.parse should correctly parse one hundred.",
+            numberParser.parse("one hundred")[0].computeDenotation() === 100
+        );
+        check(
+            "numberParser.parse should correctly parse a hundred.",
+            numberParser.parse("a hundred")[0].computeDenotation() === 100
+        );
+        check(
+            "numberParser.parse should correctly parse three hundred sixty five.",
+            numberParser.parse("three hundred sixty five")[0].computeDenotation() === 365
+        );
+        check(
+            "numberParser.parse should correctly parse one thousand two hundred and seventy six.",
+            numberParser.parse("one thousand two hundred and seventy six")[0].computeDenotation() === 1276
+        );
+        check(
+            "numberParser.parse should correctly parse a hundred and thirty two.",
+            numberParser.parse("a hundred and thirty two")[0].computeDenotation() === 132
+        );
+        check(
+            "numberParser.parse should correctly parse negative thirty five.",
+            numberParser.parse("negative thirty five")[0].computeDenotation() === -35
+        );
+        check(
+            "numberParser.parse should correctly parse five thousand two hundred.",
+            numberParser.parse("five thousand two hundred")[0].computeDenotation() === 5200
+        );
+        check(
+            "numberParser.parse should correctly parse five thousand and two hundred sixty two.",
+            numberParser.parse("five thousand and two hundred sixty two")[0].computeDenotation() === 5262
+        );
+    })
+]);
 
 
 export {

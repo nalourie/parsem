@@ -2,7 +2,11 @@
 
 import { assert } from '../utils/assert';
 import { isType } from '../utils/compare';
-import { check } from '../utils/test';
+import {
+    check,
+    suite,
+    test
+} from '../utils/test';
 import {
     isTerminal,
     isNonTerminal,
@@ -144,103 +148,114 @@ class Rule {
         this.semantics = semantics;
     }
 }
-// test toString
-check(
-    "Rule should correctly coerce to a string.",
-    new Rule('x', '$a', 'b', () => null).toString() === '$a -> b'
-);
-// test arity
-check(
-    "Rule should return correct arity when unary.",
-    new Rule('x', '$a', 'b', () => null).arity() === 1
-);
-check(
-    "Rule should return correct arity when binary.",
-    new Rule('x', '$a', 'b c', () => null).arity() === 2
-);
-check(
-    "Rule should return correct arity when trinary.",
-    new Rule('x', '$a', '$b c $d', () => null).arity() === 3
-);
-// test isUnary
-check(
-    "Rule.isUnary should return true when rule is unary.",
-    new Rule('x', '$a', '$b', () => null).isUnary()
-);
-check(
-    "Rule.isUnary should return false when rule is not unary.",
-    !(new Rule('x', '$a', '$b $c', () => null)).isUnary()
-);
-// test isBinary
-check(
-    "Rule.isBinary should return true when rule is binary.",
-    new Rule('x', '$a', '$b a', () => null).isBinary()
-);
-check(
-    "Rule.isBinary should return false when rule is not binary.",
-    !(new Rule('x', '$a', '$b $c $d', () => null)).isBinary()
-);
-// test isNary
-check(
-    "Rule.isNary should return true when rule is nary.",
-    new Rule('x', '$a', '$b c d', () => null).isNary()
-);
-check(
-    "Rule.isNary should return false when rule is not nary.",
-    !(new Rule('x', '$a', '$b $c', () => null)).isNary()
-);
-// test isLexical
-check(
-    "Rule.isLexical should return true if it's lexical.",
-    new Rule('x', '$a', 'foo bar', () => null).isLexical()
-);
-check(
-    "Rule.isLexical should return false if it's categorical.",
-    !(new Rule('x', '$a', '$b $a', () => null).isLexical())
-);
-check(
-    "Rule.isLexical should return false if it's mixed.",
-    !(new Rule('x', '$a', 'b $a', () => null).isLexical())
-);
-// test isCategorical
-check(
-    "Rule.isCategorical should return true if it's categorical.",
-    new Rule('x', '$a', '$b $a', () => null).isCategorical()
-);
-check(
-    "Rule.isCategorical should return false if it's lexical.",
-    !(new Rule('x', '$a', 'b a', () => null).isCategorical())
-);
-check(
-    "Rule.isCategorical should return false if it's mixed.",
-    !(new Rule('x', '$a', 'b $a', () => null).isCategorical())
-);
-// test isMixed
-check(
-    "Rule.isMixed should return true if it's mixed.",
-    new Rule('x', '$a', 'b $a', () => null).isMixed()
-);
-check(
-    "Rule.isMixed should return false if it's lexical.",
-    !(new Rule('x', '$a', 'b a', () => null).isMixed())
-);
-check(
-    "Rule.isMixed should return false if it's categorical.",
-    !(new Rule('x', '$a', '$b $a', () => null).isMixed())
-);
-// test hasOptionals
-check(
-    "Rule.hasOptionals should return true if there's a lexical optional.",
-    new Rule('x', '$a', '?a', () => null).hasOptionals()
-);
-check(
-    "Rule.hasOptionals should return true if there's a categorical optional.",
-    new Rule('x', '$a', '?$a', () => null).hasOptionals()
-);
-check(
-    "Rule.hasOptionals should return false if there's no optional.",
-    !(new Rule('x', '$a', '$a', () => null).hasOptionals())
-);
+suite('rule', [
+    test('Rule.toString', function () {
+        check(
+            "Rule should correctly coerce to a string.",
+            new Rule('x', '$a', 'b', () => null).toString() === '$a -> b'
+        );
+    }),
+    test('Rule.arity', function () {
+        check(
+            "Rule should return correct arity when unary.",
+            new Rule('x', '$a', 'b', () => null).arity() === 1
+        );
+        check(
+            "Rule should return correct arity when binary.",
+            new Rule('x', '$a', 'b c', () => null).arity() === 2
+        );
+        check(
+            "Rule should return correct arity when trinary.",
+            new Rule('x', '$a', '$b c $d', () => null).arity() === 3
+        );
+    }),
+    test('Rule.isUnary', function () {
+        check(
+            "Rule.isUnary should return true when rule is unary.",
+            new Rule('x', '$a', '$b', () => null).isUnary()
+        );
+        check(
+            "Rule.isUnary should return false when rule is not unary.",
+            !(new Rule('x', '$a', '$b $c', () => null)).isUnary()
+        );
+    }),
+    test('Rule.isBinary', function () {
+        check(
+            "Rule.isBinary should return true when rule is binary.",
+            new Rule('x', '$a', '$b a', () => null).isBinary()
+        );
+        check(
+            "Rule.isBinary should return false when rule is not binary.",
+            !(new Rule('x', '$a', '$b $c $d', () => null)).isBinary()
+        );
+    }),
+    test('Rule.isNary', function () {
+        check(
+            "Rule.isNary should return true when rule is nary.",
+            new Rule('x', '$a', '$b c d', () => null).isNary()
+        );
+        check(
+            "Rule.isNary should return false when rule is not nary.",
+            !(new Rule('x', '$a', '$b $c', () => null)).isNary()
+        );
+    }),
+    test('Rule.isLexical', function () {
+        check(
+            "Rule.isLexical should return true if it's lexical.",
+            new Rule('x', '$a', 'foo bar', () => null).isLexical()
+        );
+        check(
+            "Rule.isLexical should return false if it's categorical.",
+            !(new Rule('x', '$a', '$b $a', () => null).isLexical())
+        );
+        check(
+            "Rule.isLexical should return false if it's mixed.",
+            !(new Rule('x', '$a', 'b $a', () => null).isLexical())
+        );
+    }),
+    test('Rule.isCategorical', function () {
+        check(
+            "Rule.isCategorical should return true if it's categorical.",
+            new Rule('x', '$a', '$b $a', () => null).isCategorical()
+        );
+        check(
+            "Rule.isCategorical should return false if it's lexical.",
+            !(new Rule('x', '$a', 'b a', () => null).isCategorical())
+        );
+        check(
+            "Rule.isCategorical should return false if it's mixed.",
+            !(new Rule('x', '$a', 'b $a', () => null).isCategorical())
+        );
+    }),
+    test('Rule.isMixed', function () {
+        check(
+            "Rule.isMixed should return true if it's mixed.",
+            new Rule('x', '$a', 'b $a', () => null).isMixed()
+        );
+        check(
+            "Rule.isMixed should return false if it's lexical.",
+            !(new Rule('x', '$a', 'b a', () => null).isMixed())
+        );
+        check(
+            "Rule.isMixed should return false if it's categorical.",
+            !(new Rule('x', '$a', '$b $a', () => null).isMixed())
+        );
+    }),
+    test("Rule.hasOptionals", function () {
+        check(
+            "Rule.hasOptionals should return true if there's a lexical optional.",
+            new Rule('x', '$a', '?a', () => null).hasOptionals()
+        );
+        check(
+            "Rule.hasOptionals should return true if there's a categorical optional.",
+            new Rule('x', '$a', '?$a', () => null).hasOptionals()
+        );
+        check(
+            "Rule.hasOptionals should return false if there's no optional.",
+            !(new Rule('x', '$a', '$a', () => null).hasOptionals())
+        );
+    })
+]);
 
 
 export { Rule };
