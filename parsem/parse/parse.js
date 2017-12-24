@@ -6,6 +6,7 @@ import {
 } from '../utils/abstract';
 import { isType } from '../utils/compare';
 import { assert } from '../utils/assert';
+import { check } from '../utils/test';
 
 
 /**
@@ -136,7 +137,57 @@ class Parser {
 }
 
 
+/**
+ * checkParser : (Parser, Array[(String, Any)]) -> undefined
+ * =========================================================
+ * Check a parser on a data set.
+ *
+ * Run a parser on a data set represented as an array of utterance
+ * denotation pairs. `checkParser` will check that at least one of the
+ * parses produces the correct denotation and that there aren't too many
+ * parses produced.
+ *
+ * @param {String} parserName - the name of the parser being tested.
+ * @param {Parser} parser - the parse to test.
+ * @param {Array[(String, Any)]} data - the data on which to test
+ *   parser.
+ * @param {Int} maxNumParses - the maximum number of parses that the
+ *   parser should produce on the data.
+ */
+function checkParser(
+    parserName,
+    parser,
+    data,
+    maxNumParses
+) {
+    data
+        .map(([utterance, denotation]) => {
+            const parses =  parser.parse(utterance);
+
+            // check that there aren't too many parses
+            check(
+                `${parserName} shouldn't produce too many parses`
+                    + ` on "${utterance}".`,
+                parses.length <= 25
+            );
+
+            // make sure that the correct denotation is present
+            const hasDenotation = parses
+                  .map(p => p.computeDenotation())
+                  .some(v => v === denotation);
+
+            check(
+                `${parserName} should produce a parse with`
+                    + ` denotation "${denotation}" on input`
+                    + ` "${utterance}".`,
+                hasDenotation
+            );
+        })
+}
+
+
 export {
     Parse,
-    Parser
+    Parser,
+    checkParser
 };

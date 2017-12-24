@@ -8,11 +8,66 @@ import {
 import { basicTokenizer } from '../tokenize/tokenize';
 import { Rule } from '../grammar/rule';
 import { Grammar } from '../grammar/grammar';
+import { checkParser } from '../parse/parse';
 
 import { digitParser, numberParser } from './numbers';
 
 
-/* a parser for solving natural language arithmetic problems. */
+/**
+ * arithmeticData : Array[(String, Int)]
+ * =====================================
+ * An array of data for natural language arithmetic.
+ *
+ * `arithmeticData` contains utterance - denotation pairs for natural
+ * language arithmetic problems.
+ */
+const arithmeticData = [
+    // natural language numbers
+    ["one", 1],
+    ["two", 2],
+    ["fifty three", 53],
+    // digit representations of numbers
+    ["52", 52],
+    ["12,000", 12000],
+    // unary operations
+    ["minus one", -1],
+    ["minus three", -3],
+    ["minus minus three", 3],
+    // binary operations
+    ["one plus one", 2],
+    ["one plus one plus one", 3],
+    ["one plus two minus three", 0],
+    ["six times seven", 42],
+    ["12 divided by six", 2],
+    ["eight subtracted from two", -6],
+    // mixed unary and binary operations
+    ["one plus two minus minus three", 6],
+    ["five minus minus one", 6],
+    ["five minus plus one", 4],
+    // langauge that has to be ignored
+    ["what is five minus one", 4],
+    ["What is one plus five?", 6],
+    ["Three minus seven times two is how much?", -8],
+    ["Say, how much is six times five?", 30],
+    ["what is 43 plus 21?", 64],
+    ["How about 4 plus seven?", 11],
+    // left applying unary operations
+    ["What is two squared?", 4],
+    ["What is two cubed?", 8],
+    ["What is two cubed subtracted from six?", -2],
+    // powers
+    ["What is 2 to the 3?", 8],
+    ["What is two to the third power?", 8],
+    ["What is two to the three?", 8],
+    ["What is two to the power of 3?", 8]
+]
+
+
+/**
+ * arithmeticParser
+ * ================
+ * a parser for solving natural language arithmetic problems.
+ */
 const arithmeticParser = new Grammar(
     ["$Root"],
     basicTokenizer,
@@ -112,80 +167,17 @@ const arithmeticParser = new Grammar(
 );
 suite('arithmetic', [
     test('arithmeticParser.parse', function () {
-        check(
-            "arithmeticParser.parse should parse one.",
-            arithmeticParser.parse("one")[0].computeDenotation() === 1
-        );
-        check(
-            "arithmeticParser.parse should parse two.",
-            arithmeticParser.parse("two")[0].computeDenotation() === 2
-        );
-        check(
-            "arithmeticParser.parse should parse minus one.",
-            arithmeticParser.parse("minus one")[0].computeDenotation() === -1
-        );
-        check(
-            "arithmeticParser.parse should parse minus three.",
-            arithmeticParser.parse("minus three")[0].computeDenotation() === -3
-        );
-        check(
-            "arithmeticParser.parse should parse minus minus three.",
-            arithmeticParser.parse('minus minus three')[0].computeDenotation() === 3
-        );
-        check(
-            "arithmeticParser.parse should parse one plus one.",
-            arithmeticParser.parse('one plus one')[0].computeDenotation() === 2
-        );
-        check(
-            "arithmeticParser.parse should parse one plus one plus one.",
-            arithmeticParser.parse('one plus one plus one')[0].computeDenotation() === 3
-        );
-        check(
-            "arithmeticParser.parse should parse one plus two minus three.",
-            arithmeticParser.parse('one plus two minus three')[0].computeDenotation() === 0
-        );
-        check(
-            "arithmeticParser.parse should parse one plus two minus minus three.",
-            arithmeticParser.parse('one plus two minus minus three')[0].computeDenotation() === 6
-        );
-        check(
-            "arithmeticParser.parse should parse five minus minus one.",
-            arithmeticParser.parse('five minus minus one')[0].computeDenotation() === 6
-        );
-        check(
-            "arithmeticParser.parse should parse five minus plus one.",
-            arithmeticParser.parse('five minus plus one')[0].computeDenotation() === 4
-        );
-        check(
-            "arithmeticParser.parse should parse what is five minus one.",
-            arithmeticParser.parse('what is five minus one')[0].computeDenotation() === 4
-        );
-        check(
-            "arithmeticParser.parse should parse What is one plus five?.",
-            arithmeticParser.parse('What is one plus five?')[0].computeDenotation() === 6
-        );
-        check(
-            "arithmeticParser.parse should parse Three minus seven times two is how much?.",
-            arithmeticParser.parse('Three minus seven times two is how much?')[0].computeDenotation() === -8
-        );
-        check(
-            "arithmeticParser.parse should parse Say, how much is six times five?.",
-            arithmeticParser.parse('Say, how much is six times five?')[0].computeDenotation() === 30
-        );
-        check(
-            "arithmeticParser.parse should parse what is 43 plus 21?.",
-            arithmeticParser.parse('what is 43 plus 21?')[0].computeDenotation() === 64
-        );
-        check(
-            "arithmeticParser.parse should parse How about 4 plus seven?.",
-            arithmeticParser.parse('How about 4 plus seven?')[0].computeDenotation() === 11
-        );
-        check(
-            "arithmeticParser.parse should parse What is 2 to the 3?.",
-            arithmeticParser.parse('What is 2 to the 3?')[0].computeDenotation() === 8
+        checkParser(
+            "arithmeticParser",
+            arithmeticParser,
+            arithmeticData,
+            25
         );
     })
 ]);
 
 
-export { arithmeticParser };
+export {
+    arithmeticData,
+    arithmeticParser
+};

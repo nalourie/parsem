@@ -5,7 +5,7 @@ import {
     suite,
     test
 } from '../utils/test';
-import { Parse, Parser } from '../parse/parse';
+import { Parse, Parser, checkParser } from '../parse/parse';
 
 import { basicTokenizer } from '../tokenize/tokenize';
 import { Rule } from '../grammar/rule';
@@ -28,6 +28,28 @@ class NumberParse extends Parse {
         // attributes
     }
 }
+
+
+/**
+ * digitData : Array[(String, Int)]
+ * ================================
+ * An array of data for parsing digits.
+ *
+ * `digitData` contains utterance - denotation pairs for strings
+ * representing numbers written out using digits.
+ */
+const digitData = [
+    // integers
+    ["1", 1],
+    ["12", 12],
+    ["1235", 1235],
+    // decimals
+    ["12.643", 12.643],
+    ["1.01", 1.01],
+    ["1.", 1],
+    // numbers with commas
+    ["12,000", 12000]
+];
 
 
 /**
@@ -60,22 +82,7 @@ class DigitParser extends Parser {
 const digitParser = new DigitParser(["$Number"]);
 suite('numbers', [
     test('digitParser.parse', function () {
-        check(
-            "digitParser.parse should produce only one parse for an integer.",
-            digitParser.parse("12").length === 1
-        );
-        check(
-            "digitParser.parse should correctly parse an integer.",
-            digitParser.parse("12")[0].computeDenotation() === 12
-        );
-        check(
-            "digitParser.parse should produce only one parse for a decimal.",
-            digitParser.parse("12.643").length === 1
-        );
-        check(
-            "digitParser.parse should correctly parse a decimal.",
-            digitParser.parse("12.643")[0].computeDenotation() === 12.643
-        );
+        // check that digitParser rejects certain non-numbers
         check(
             "digitParser.parse should not parse numbers with trailing characters.",
             digitParser.parse("12a").length === 0
@@ -92,16 +99,41 @@ suite('numbers', [
             "digitParser.parse should not parse non-numbers.",
             digitParser.parse("foo").length === 0
         );
-        check(
-            "digitParser.parse should handle commas.",
-            digitParser.parse("12,000").length === 1
-        );
-        check(
-            "digitParser.parse should parse integers with commas.",
-            digitParser.parse("12,000")[0].computeDenotation() === 12000
+        // check digitParser on digitData
+        checkParser(
+            'digitParser',
+            digitParser,
+            digitData,
+            1
         );
     })
 ]);
+
+
+/**
+ * numberData : Array[(String, Int)]
+ * =================================
+ * An array of data for parsing numbers.
+ *
+ * `numberData` contains utterance - denotation pairs for strings
+ * representing numbers written out using natural language.
+ */
+const numberData = [
+    ["one", 1],
+    ["two", 2],
+    ["three", 3],
+    ["five", 5],
+    ["thirteen", 13],
+    ["sixty three", 63],
+    ["one hundred", 100],
+    ["a hundred", 100],
+    ["three hundred sixty five", 365],
+    ["one thousand two hundred and seventy six", 1276],
+    ["a hundred and thirty two", 132],
+    ["negative thirty five", -35],
+    ["five thousand two hundred", 5200],
+    ["five thousand and two hundred sixty two", 5262],
+];
 
 
 /**
@@ -320,61 +352,11 @@ const numberParser = new Grammar(
 );
 suite('numbers', [
     test('numberParser.parse', function () {
-        check(
-            "numberParser.parse should correctly parse one.",
-            numberParser.parse("one")[0].computeDenotation() === 1
-        );
-        check(
-            "numberParser.parse should correctly parse two.",
-            numberParser.parse("two")[0].computeDenotation() === 2
-        );
-        check(
-            "numberParser.parse should correctly parse three.",
-            numberParser.parse("three")[0].computeDenotation() === 3
-        );
-        check(
-            "numberParser.parse should correctly parse five.",
-            numberParser.parse("five")[0].computeDenotation() === 5
-        );
-        check(
-            "numberParser.parse should correctly parse thirteen.",
-            numberParser.parse("thirteen")[0].computeDenotation() === 13
-        );
-        check(
-            "numberParser.parse should correctly parse sixty three.",
-            numberParser.parse("sixty three")[0].computeDenotation() === 63
-        );
-        check(
-            "numberParser.parse should correctly parse one hundred.",
-            numberParser.parse("one hundred")[0].computeDenotation() === 100
-        );
-        check(
-            "numberParser.parse should correctly parse a hundred.",
-            numberParser.parse("a hundred")[0].computeDenotation() === 100
-        );
-        check(
-            "numberParser.parse should correctly parse three hundred sixty five.",
-            numberParser.parse("three hundred sixty five")[0].computeDenotation() === 365
-        );
-        check(
-            "numberParser.parse should correctly parse one thousand two hundred and seventy six.",
-            numberParser.parse("one thousand two hundred and seventy six")[0].computeDenotation() === 1276
-        );
-        check(
-            "numberParser.parse should correctly parse a hundred and thirty two.",
-            numberParser.parse("a hundred and thirty two")[0].computeDenotation() === 132
-        );
-        check(
-            "numberParser.parse should correctly parse negative thirty five.",
-            numberParser.parse("negative thirty five")[0].computeDenotation() === -35
-        );
-        check(
-            "numberParser.parse should correctly parse five thousand two hundred.",
-            numberParser.parse("five thousand two hundred")[0].computeDenotation() === 5200
-        );
-        check(
-            "numberParser.parse should correctly parse five thousand and two hundred sixty two.",
-            numberParser.parse("five thousand and two hundred sixty two")[0].computeDenotation() === 5262
+        checkParser(
+            'numberParser',
+            numberParser,
+            numberData,
+            10
         );
     })
 ]);
