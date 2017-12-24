@@ -162,9 +162,14 @@ const numberParser = new Grammar(
     [
         // define the root symbols
         new Rule(
-            'rootPositive',
+            'root',
             '$Number', '$Num',
             x => x
+        ),
+        new Rule(
+            'rootPostive',
+            '$Number', 'positive $Num',
+            (x, y) => y
         ),
         new Rule(
             'rootNegative',
