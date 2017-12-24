@@ -10,7 +10,8 @@ import { Rule } from '../grammar/rule';
 import { Grammar } from '../grammar/grammar';
 import { checkParser } from '../parse/parse';
 
-import { digitParser, numberParser } from './numbers';
+import { ignorableParser } from './ignore';
+import { digitParser, numberParser, ordinalParser } from './numbers';
 
 
 /**
@@ -71,7 +72,7 @@ const arithmeticData = [
 const arithmeticParser = new Grammar(
     ["$Root"],
     basicTokenizer,
-    [digitParser, numberParser],
+    [digitParser, numberParser, ordinalParser, ignorableParser],
     [
         // define a valid parse
         new Rule(
@@ -79,89 +80,111 @@ const arithmeticParser = new Grammar(
             '$Root', '?$Ignorable $Expr ?$Ignorable',
             (x, y, z) => y
         ),
-        // make ignorables
-        new Rule(
-            'ignorable',
-            '$Ignorable', 'say',
-            () => null
-        ),
-        new Rule(
-            'ignorable',
-            '$Ignorable', 'tell me',
-            () => null
-        ),
-        new Rule(
-            'ignorable',
-            '$Ignorable', 'what',
-            () => null
-        ),
-        new Rule(
-            'ignorable',
-            '$Ignorable', 'whats',
-            () => null
-        ),
-        new Rule(
-            'ignorable',
-            '$Ignorable', 'is',
-            () => null
-        ),
-        new Rule(
-            'ignorable',
-            '$Ignorable', 'how much',
-            () => null
-        ),
-        new Rule(
-            'ignorable',
-            '$Ignorable', '$Ignorable $Ignorable',
-            () => null
-        ),
+        // expressions can be numbers
         new Rule(
             'exprToNumber',
             '$Expr', '$Number',
             x => x
         ),
-        // encode basic arithmetic operations
+        //  unary prefix operations
         new Rule(
-            'unaryMinus',
-            '$UnaryOp', 'minus',
-            () => x => -x
-        ),
-        new Rule(
-            'unaryPlus',
-            '$UnaryOp', 'plus',
+            'unaryPrefixPlus',
+            '$UnaryPrefixOp', 'plus',
             () => x => x
         ),
+        new Rule(
+            'unaryPrefixMinus',
+            '$UnaryPrefixOp', 'minus',
+            () => x => -x
+        ),
+        // unary postfix operations
+        new Rule(
+            'unaryPostfixSquared',
+            '$UnaryPostfixOp', 'squared',
+            () => x => x ** 2
+        ),
+        new Rule(
+            'unaryPostfixCubed',
+            '$UnaryPostfixOp', 'cubed',
+            () => x => x ** 3
+        ),
+        // binary operations
+        //   addition
         new Rule(
             'binaryPlus',
             '$BinaryOp', 'plus',
             () => (x, y) => x + y
         ),
         new Rule(
+            'binaryPlus',
+            '$BinaryOp', 'added to',
+            () => (x, y) => x + y
+        ),
+        //   subtraction
+        new Rule(
             'binaryMinus',
             '$BinaryOp', 'minus',
             () => (x, y) => x - y
         ),
         new Rule(
+            'binaryMinus',
+            '$BinaryOp', 'subtracted from',
+            () => (x, y) => y - x
+        ),
+        //   multiplication
+        new Rule(
             'binaryTimes',
             '$BinaryOp', 'times',
             () => (x, y) => x * y
         ),
+        new Rule(
+            'binaryTimes',
+            '$BinaryOp', 'multiplied by',
+            () => (x, y) => x * y
+        ),
+        //   division
+        new Rule(
+            'binaryTimes',
+            '$BinaryOp', 'divided by',
+            () => (x, y) => x / y
+        ),
+        new Rule(
+            'binaryTimes',
+            '$BinaryOp', 'over',
+            () => (x, y) => x / y
+        ),
         // composition rules
         new Rule(
-            'unaryApplication',
-            '$Expr', '$UnaryOp $Expr',
+            'unaryPrefixApplication',
+            '$Expr', '$UnaryPrefixOp $Expr',
             (x, y) => x(y)
+        ),
+        new Rule(
+            'unaryPostfixApplication',
+            '$Expr', '$Expr $UnaryPostfixOp',
+            (x, y) => y(x)
         ),
         new Rule(
             'binaryApplication',
             '$Expr', '$Expr $BinaryOp $Expr',
             (x, y, z) => y(x, z)
         ),
-        // mixed lexical / categorical rule
+        // adhoc rules
+        //   powers
         new Rule(
-            'introExpression',
-            '$Expr', 'how about $Expr',
-            (x, y, z) => z
+            'power',
+            '$Expr', '$Expr to the $Expr ?power',
+            (v, w, x, y, z) => v ** y
+        ),
+        new Rule(
+            'powerOrdinal',
+            '$Expr', '$Expr to the $Ordinal power',
+            (v, w, x, y, z) => v ** y
+        ),
+        new Rule(
+            'powerOf',
+            '$Expr', '$Expr to the power of $Expr',
+            (u, v, w, x, y, z) => u ** z
         )
     ]
 );
