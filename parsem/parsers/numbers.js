@@ -21,7 +21,7 @@ import { Grammar } from '../grammar/grammar';
  */
 class NumberParse extends Parse {
     constructor(span,  semantics) {
-        super(span, "$Number", span, [], semantics);
+        super("number", "$Number", span, [], semantics);
 
         // methods
 
