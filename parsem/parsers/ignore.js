@@ -8,7 +8,11 @@ import {
     suite,
     test
 } from '../utils/test';
-import { Parse, Parser } from '../parse/parse';
+import {
+    Parse,
+    Parser,
+    checkParser
+} from '../parse/parse';
 
 
 /**
@@ -30,6 +34,17 @@ class IgnorableParse extends Parse {
         // attributes
     }
 }
+
+
+/**
+ * ignorableData : Array[(String, null)]
+ * =====================================
+ * An array of data to test the IgnorableParser.
+ */
+const ignorableData = [
+    ["", null],
+    ["This sentence should be ignored.", null]
+];
 
 
 /**
@@ -82,12 +97,19 @@ suite('ignore', [
                 .parse("The dog runs fast.")[0]
                 .computeDenotation() === null
         );
+        checkParser(
+            'ignorableParser',
+            ignorableParser,
+            ignorableData,
+            1
+        );
     })
 ]);
 
 
 export {
     IgnorableParse,
+    ignorableData,
     IgnorableParser,
     ignorableParser
 };

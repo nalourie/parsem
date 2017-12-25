@@ -643,8 +643,11 @@ suite('numbers', [
 
 export {
     NumberParse,
+    digitData,
     DigitParser,
     digitParser,
+    numberData,
     numberParser,
+    ordinalData,
     ordinalParser
 };
