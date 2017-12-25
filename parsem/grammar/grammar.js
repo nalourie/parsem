@@ -185,21 +185,22 @@ class Grammar extends Parser {
          */
         const processNaryRule = (rule, rules) => {
             const firstNonTerminal = rule.rhs[0];
-            const restNonTerminals = rule.rhs.slice(1);
+            const secondNonTerminal = rule.rhs[1];
+            const restNonTerminals = rule.rhs.slice(2);
 
-            const newRuleLhs = `${rule.lhs}_${firstNonTerminal}`;
-            const newRuleRhs = restNonTerminals
+            const newRuleLhs = `${firstNonTerminal}_${secondNonTerminal}`;
+            const newRuleRhs = [firstNonTerminal, secondNonTerminal];
 
             const oldRule = new Rule(
                 rule.tag,
                 rule.lhs,
-                [firstNonTerminal, newRuleLhs],
-                (x, y) => rule.semantics(x, ...y)
+                [newRuleLhs, ...restNonTerminals],
+                (x, ...y) => rule.semantics(x[0], x[1], ...y)
             );
             rules.push(oldRule);
 
             const newRule = new Rule(
-                rule.tag + "_" + firstNonTerminal,
+                rule.tag + "_" + newRuleLhs,
                 newRuleLhs,
                 newRuleRhs,
                 (...args) => args
