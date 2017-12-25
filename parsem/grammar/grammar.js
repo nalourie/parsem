@@ -7,7 +7,10 @@ import {
     suite,
     test
 } from '../utils/test';
-import { Tokenizer } from '../tokenize/tokenize';
+import {
+    Tokenizer,
+    basicTokenizer
+} from '../tokenize/tokenize';
 import { Parser } from '../parse/parse';
 import {
     isTerminal,
@@ -65,6 +68,11 @@ class Grammar extends Parser {
         super(roots)
 
         // helper functions for the constructor
+
+        // internally, on generated rules ~ means that an element of the
+        // original rule was omitted, $@ begins a generated lexical
+        // category, _ connects categories in binarized n-ary rules, and
+        // - connects lexical elements in multi-token lexical rules.
 
         /**
          * processOptionalRule : (Rule, [Rule]) -> null
@@ -132,11 +140,11 @@ class Grammar extends Parser {
         ) => {
             // convert the lexical elements into categories
             // containing just those lexical elements, for
-            // example, "from" -> "$_from". We start with the
+            // example, "from" -> "$@from". We start with the
             // underscore to avoid name collisions with user
             // created rules.
             const newRhs = rule.rhs.map(
-                x => isTerminal(x) ? "$_" + x : x
+                x => isTerminal(x) ? "$@" + x : x
             );
             rules.push(
                 new Rule(
@@ -155,13 +163,13 @@ class Grammar extends Parser {
                 const key = this.tokenizer
                       .tokenize(lexicalElement)
                       .map(t => t.token)
-                      .join(',');
+                      .join('-');
                 // remove duplicates
                 if (!generatedLexicalRules.has(key)) {
                     rules.push(
                         new Rule(
                             lexicalElement,
-                            "$_" + key,
+                            "$@" + key,
                             lexicalElement,
                             () => lexicalElement
                         )
@@ -183,7 +191,11 @@ class Grammar extends Parser {
          *   @param {Array} rules - the array of rules to update with
          *     the rules produced by processing `rule`.
          */
-        const processNaryRule = (rule, rules) => {
+        const processNaryRule = (
+            rule,
+            rules,
+            generatedNaryRules
+        ) => {
             const firstNonTerminal = rule.rhs[0];
             const secondNonTerminal = rule.rhs[1];
             const restNonTerminals = rule.rhs.slice(2);
@@ -199,15 +211,17 @@ class Grammar extends Parser {
             );
             rules.push(oldRule);
 
-            const newRule = new Rule(
-                rule.tag + "_" + newRuleLhs,
-                newRuleLhs,
-                newRuleRhs,
-                (...args) => args
-            );
-            rules.push(newRule);
+            if (!generatedNaryRules.has(newRuleLhs)) {
+                const newRule = new Rule(
+                    rule.tag + "_" + newRuleLhs,
+                    newRuleLhs,
+                    newRuleRhs,
+                    (...args) => args
+                );
+                rules.push(newRule);
+                generatedNaryRules.add(newRuleLhs);
+            }
         }
-
         const processRules = (rules) => {
             // copy rules because we'll be mutating it
             rules = rules.slice();
@@ -218,6 +232,7 @@ class Grammar extends Parser {
 
             // we'll want to avoid creating duplicate lexical rules.
             const generatedLexicalRules = new Set();
+            const generatedNaryRules = new Set();
 
             while (rules.length > 0) {
                 const rule = rules.shift()
@@ -231,7 +246,11 @@ class Grammar extends Parser {
                         generatedLexicalRules
                     );
                 } else if (rule.isNary() && !rule.isLexical()) {
-                    processNaryRule(rule, rules);
+                    processNaryRule(
+                        rule,
+                        rules,
+                        generatedNaryRules
+                    );
                 } else if (rule.isLexical()) {
                     // add the lexical rule to `lexicalRules`
                     const key = rule.rhs.map(
@@ -275,6 +294,10 @@ class Grammar extends Parser {
             // tokenize the input
             const tokens = this.tokenizer.tokenize(s);
             const chart = {}
+
+            if (tokens.length === 0) {
+                return [];
+            }
 
             // iterate through all spans, producing parses of them in a
             // bottom up fashion.
@@ -359,7 +382,7 @@ class Grammar extends Parser {
                 }
             }
 
-            let parses
+            let parses;
             if (roots.length > 0) {
                 parses = chart[[0,tokens.length]].filter(
                     p => roots.includes(p.category)
@@ -403,6 +426,212 @@ class Grammar extends Parser {
         this.unaryRules = processedRules.unaryRules;
     }
 }
+suite('grammar', [
+    test('Grammar.constructor on lexical rules', function () {
+        const testGrammar = new Grammar(
+            ['$Root'],
+            basicTokenizer,
+            [],
+            [
+                new Rule(
+                    'tag',
+                    '$lhs', 'foo',
+                    () => null
+                )
+            ]
+        );
+        check(
+            "Grammar.constructor should create one lexical rule.",
+            testGrammar.lexicalRules['foo'].length === 1
+        );
+        check(
+            "Grammar.constructor should create a lexical rule.",
+            isType(testGrammar.lexicalRules['foo'][0], Rule)
+        );
+        check(
+            "Grammar.constructor should not create binary rules.",
+            Object.keys(testGrammar.binaryRules).length === 0
+        );
+        check(
+            "Grammar.constructor should not create unary rules.",
+            Object.keys(testGrammar.unaryRules).length === 0
+        );
+    }),
+    test('Grammar.constructor on binary rules', function () {
+        const testGrammar = new Grammar(
+            ['$Root'],
+            basicTokenizer,
+            [],
+            [
+                new Rule(
+                    'tag',
+                    '$lhs', '$foo $bar',
+                    () => null
+                )
+            ]
+        );
+        check(
+            "Grammar.constructor should create no lexical rules.",
+            Object.keys(testGrammar.lexicalRules).length === 0
+        );
+        check(
+            "Grammar.constructor should create a binary rule.",
+            testGrammar.binaryRules['$foo,$bar'].length === 1
+        );
+        check(
+            "Grammar.constructor should create a lexical rule.",
+            isType(testGrammar.binaryRules['$foo,$bar'][0], Rule)
+        );
+        check(
+            "Grammar.constructor should not create unary rules.",
+            Object.keys(testGrammar.unaryRules).length === 0
+        );
+    }),
+    test('Grammar.constructor on unary rules.', function () {
+        const testGrammar = new Grammar(
+            ['$Root'],
+            basicTokenizer,
+            [],
+            [
+                new Rule(
+                    'tag',
+                    '$lhs', '$foo',
+                    () => null
+                )
+            ]
+        );
+        check(
+            "Grammar.constructor should create no lexical rules.",
+            Object.keys(testGrammar.lexicalRules).length === 0
+        );
+        check(
+            "Grammar.constructor should create no binary rules.",
+            Object.keys(testGrammar.binaryRules).length === 0
+        );
+        check(
+            "Grammar.constructor should create one unary rule.",
+            testGrammar.unaryRules['$foo'].length === 1
+        );
+        check(
+            "Grammar.constructor should create a unary rule.",
+            isType(testGrammar.unaryRules['$foo'][0], Rule)
+        );
+    }),
+    test('Grammar.constructor on optionals', function () {
+        const testGrammar = new Grammar(
+            ['$Root'],
+            basicTokenizer,
+            [],
+            [
+                new Rule(
+                    'tag',
+                    '$lhs', '$foo ?$bar',
+                    () => null
+                )
+            ]
+        );
+        check(
+            "Grammar.constructor should create one unary rule.",
+            Object.keys(testGrammar.unaryRules).length === 1
+        );
+        check(
+            "Grammar.constructor should create one unary rule.",
+            testGrammar.unaryRules["$foo"].length === 1
+        );
+        check(
+            "Grammar.constructor should create a unary rule.",
+            isType(testGrammar.unaryRules["$foo"][0], Rule)
+        );
+        check(
+            "Grammar.constructor should create one binary rule.",
+            Object.keys(testGrammar.binaryRules).length === 1
+        );
+        check(
+            "Grammar.constructor should create one binary rule.",
+            testGrammar.binaryRules["$foo,$bar"].length === 1
+        );
+        check(
+            "Grammar.constructor should create a unary rule.",
+            isType(testGrammar.binaryRules["$foo,$bar"][0], Rule)
+        );
+        check(
+            "Grammar.constructor should create no lexical rules.",
+            Object.keys(testGrammar.lexicalRules).length === 0
+        );
+    }),
+    test('Grammar.constructor on mixed rules.', function () {
+        const testGrammar = new Grammar(
+            ['$Root'],
+            basicTokenizer,
+            [],
+            [
+                new Rule(
+                    'tag',
+                    '$lhs', '$foo bar',
+                    () => null
+                )
+            ]
+        );
+        check(
+            "Grammar.constructor should create one lexical rule.",
+            Object.keys(testGrammar.lexicalRules).length === 1
+        );
+        check(
+            "Grammar.constructor should create one rule for 'bar'.",
+            testGrammar.lexicalRules["bar"].length === 1
+        );
+        check(
+            "Grammar.constructor should create a lexical rule.",
+            isType(testGrammar.lexicalRules["bar"][0], Rule)
+        );
+        check(
+            "Grammar.constructor should create one binary rule.",
+            Object.keys(testGrammar.binaryRules).length === 1
+        );
+        check(
+            "Grammar.constructor should create one rule for $foo_$@bar",
+            testGrammar.binaryRules["$foo,$@bar"].length === 1
+        );
+        check(
+            "Grammar.constructor should create a binary rule.",
+            isType(testGrammar.binaryRules["$foo,$@bar"][0], Rule)
+        );
+    }),
+    test("Grammar.constructor on Nary rules.", function () {
+        const testGrammar = new Grammar(
+            ['$Root'],
+            basicTokenizer,
+            [],
+            [
+                new Rule(
+                    'tag',
+                    '$lhs', '$foo $bar $baz',
+                    () => null
+                )
+            ]
+        );
+        check(
+            "Grammar.constructor should create 2 binary rules.",
+            Object.keys(testGrammar.binaryRules).length === 2
+        );
+        check(
+            "Grammar.constructor should create one rule for $foo,$bar.",
+            testGrammar.binaryRules["$foo,$bar"].length === 1
+        );
+        check(
+            "Grammar.constructor should create a rule for $foo,$bar.",
+            isType(testGrammar.binaryRules["$foo,$bar"][0], Rule)
+        );
+        check(
+            "Grammar.constructor should create one rule for $foo_$bar,$baz.",
+            testGrammar.binaryRules["$foo_$bar,$baz"].length === 1
+        );
+        check(
+            "Grammar.constructor should create a rule for $foo_$bar,$baz.",
+            isType(testGrammar.binaryRules["$foo_$bar,$baz"][0], Rule)
+        );
+    })
+]);
 
 
 export { Grammar };
