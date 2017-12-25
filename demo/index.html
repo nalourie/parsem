@@ -37,6 +37,9 @@
       <div id="demo-form" class="card">
         <form>
           <select id="demo-select-parser"></select>
+
+          <p id="demo-parser-description"></p>
+
           <input id="demo-input" name="parse-text" type="text">
           <input id="demo-submit" type="submit" value="Parse!">
         </form>
@@ -59,7 +62,7 @@
 
     <script src="./bundle.js"></script>
     <script>
-      function demoParser(e) {
+      function submitDemoForm(e) {
         e.preventDefault();
 
         // fetch input and compute semantics
@@ -68,40 +71,69 @@
         var result = Array.from(
             new Set(
               parsers[parser]
+                .parser
                 .parse(text)
                 .map(d => d.computeDenotation())
             )
           )
-          .join(", ") || "Sorry, I didn't understand.";
+         .map(v => JSON.stringify(v))
+         .join(", ") || "Sorry, I didn't understand.";
 
         // clear the input
-        document.getElementById("demo-input").value = "";
+        document
+          .getElementById("demo-input")
+          .value = "";
 
         // display the result
-        document.getElementById("question").innerHTML = text;
-        document.getElementById("answer").innerHTML = result;
+        document
+          .getElementById("question")
+          .innerHTML = text;
+        document
+          .getElementById("answer")
+          .innerHTML = result;
 
         return false;
       }
 
-      // add the parsers to the select field
-      var parserNames = Object.getOwnPropertyNames(parsers);
-      for (var i = 0; i < parserNames.length; i++) {
-        var parserName = parserNames[i]
-        var parserOption = document.createElement('option');
-        parserOption.value = parserName;
-        parserOption.innerHTML = parserName;
-        document.getElementById("demo-select-parser").appendChild(parserOption);
+      function setExampleParser() {
+        var parser = document
+          .getElementById("demo-select-parser")
+          .value;
+        var description = parsers[parser].description;
+        var example = parsers[parser].example;
+
+        // display the parser's description
+        document
+          .getElementById("demo-parser-description")
+          .innerHTML = `<strong>${parser}</strong>: ${description}`;
+
+        // set the example input
+        document
+          .getElementById("demo-input")
+          .value = example;
       }
 
-      // add an example to the demo input
-      document.getElementById("demo-input").value = "How much is six times seven?";
+      // add the parsers to the select field
+      for (var parser in parsers) {
+        var parserOption = document.createElement('option');
+        parserOption.value = parser;
+        parserOption.innerHTML = parser;
+        document
+          .getElementById("demo-select-parser")
+          .appendChild(parserOption);
+      }
+      // initialize demo input
+      setExampleParser();
 
-      // attach demoParser to the demo form
-      document.getElementById("demo-form").addEventListener(
-        "submit",
-        demoParser
-      );
+      // attach setExampleParser to demo-select-parser
+      document
+        .getElementById("demo-select-parser")
+        .addEventListener("change", setExampleParser);
+
+      // attach demoFormSubmit to the demo form
+      document
+        .getElementById("demo-form")
+        .addEventListener("submit", submitDemoForm);
     </script>
   </body>
 </html>
