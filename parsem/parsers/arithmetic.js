@@ -60,7 +60,13 @@ const arithmeticData = [
     ["What is 2 to the 3?", 8],
     ["What is two to the third power?", 8],
     ["What is two to the three?", 8],
-    ["What is two to the power of 3?", 8]
+    ["What is two to the power of 3?", 8],
+    // other
+    ["How much is six times three minus four?", 14],
+    ["Tell me what six minus three times four is?", -6],
+    ["What's five minus three to the second power?", -4],
+    ["Two subtracted from eight times two.", 14],
+    ["One minus two times three.", -5]
 ]
 
 
