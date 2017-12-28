@@ -16,36 +16,46 @@ import {
     ignorableData,
     ignorableParser
 } from '../parsem/parsers/ignore';
+import {
+    arithmeticRanker,
+    numberRanker,
+    ordinalRanker
+} from '../parsem/rankers/rankers';
 
 
 // the parsers object is used to generate the interactive demo.
 window.parsers = {
     "arithmeticParser": {
         "parser": arithmeticParser,
+        "ranker": arithmeticRanker,
         "description": "Execute natural language arithmetic expressions.",
         "example": "How much is seven times three?",
         "data": arithmeticData
     },
     "numberParser": {
         "parser": numberParser,
+        "ranker": numberRanker,
         "description": "Parse numbers expressed in words.",
         "example": "one thousand twenty two",
         "data": numberData
     },
     "ordinalParser": {
         "parser": ordinalParser,
+        "ranker": ordinalRanker,
         "description": "Parse ordinal numbers expressed in words",
         "example": "thirty third",
         "data": ordinalData
     },
     "digitParser": {
         "parser": digitParser,
+        "ranker": null,
         "description": "Parse numbers expressed in digits.",
         "example": "12,034",
         "data": digitData
     },
     "ignorableParser": {
         "parser": ignorableParser,
+        "ranker": null,
         "description": "Parse a span in order to ignore it.",
         "example": "Hello, world!",
         "data": ignorableData
@@ -58,6 +68,7 @@ window.parsers = {
 import {
     runSuites
 } from '../parsem/utils/test';
+
 
 // run all test suites
 runSuites(/.*/);
