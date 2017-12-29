@@ -143,7 +143,7 @@ const numberData = [
     ["a hundred and thirty two", 132],
     ["negative thirty five", -35],
     ["five thousand two hundred", 5200],
-    ["five thousand and two hundred sixty two", 5262],
+    ["five thousand and two hundred sixty two", 5262]
 ];
 
 
