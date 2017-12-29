@@ -95,13 +95,58 @@ input {
     font-size: 1.5rem;
 }
 
-#demo-input {
+input.input {
     width: 100%;
     box-sizing: border-box;
 }
 
-#demo-submit {
+.button {
     margin: 5px 0px 5px 0px;
     background-color: #8C215B;
     color: #fff;
+}
+
+/* spinner / wait screen */
+
+.curtain {
+    display: block;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 100;
+    animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.spinner {
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -32px;
+    border: 8px solid #888;
+    border-top: 8px solid #fff;
+    border-radius: 50%;
+    width: 64px;
+    height: 64px;
+    animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }

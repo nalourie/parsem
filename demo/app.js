@@ -1,6 +1,9 @@
 /* application logic for the parsem demo */
 
 import {
+    accuracy
+} from '../parsem/eval/eval';
+import {
     arithmeticData,
     arithmeticParser
 } from '../parsem/parsers/arithmetic';
@@ -21,39 +24,47 @@ import {
     numberRanker,
     ordinalRanker
 } from '../parsem/rankers/rankers';
+import {
+    shuffle
+} from '../parsem/utils/random';
+
+
+// attach functions and utilities required by the demo
+window.accuracy = accuracy;
+window.shuffle = shuffle;
 
 
 // the parsers object is used to generate the interactive demo.
 window.parsers = {
-    "arithmeticParser": {
+    "arithmetic": {
         "parser": arithmeticParser,
         "ranker": arithmeticRanker,
         "description": "Execute natural language arithmetic expressions.",
         "example": "How much is seven times three?",
         "data": arithmeticData
     },
-    "numberParser": {
+    "numbers": {
         "parser": numberParser,
         "ranker": numberRanker,
         "description": "Parse numbers expressed in words.",
         "example": "one thousand twenty two",
         "data": numberData
     },
-    "ordinalParser": {
+    "ordinals": {
         "parser": ordinalParser,
         "ranker": ordinalRanker,
         "description": "Parse ordinal numbers expressed in words",
         "example": "thirty third",
         "data": ordinalData
     },
-    "digitParser": {
+    "digits": {
         "parser": digitParser,
         "ranker": null,
         "description": "Parse numbers expressed in digits.",
         "example": "12,034",
         "data": digitData
     },
-    "ignorableParser": {
+    "ignorables": {
         "parser": ignorableParser,
         "ranker": null,
         "description": "Parse a span in order to ignore it.",
