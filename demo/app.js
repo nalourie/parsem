@@ -20,9 +20,11 @@ import {
     ignorableParser
 } from '../parsem/parsers/ignore';
 import {
-    arithmeticRanker,
-    numberRanker,
-    ordinalRanker
+    arithmeticLinearRanker,
+    digitConstantRanker,
+    numberLinearRanker,
+    ordinalLinearRanker,
+    ignorableConstantRanker
 } from '../parsem/rankers/rankers';
 import {
     shuffle
@@ -38,35 +40,35 @@ window.shuffle = shuffle;
 window.parsers = {
     "arithmetic": {
         "parser": arithmeticParser,
-        "ranker": arithmeticRanker,
+        "ranker": arithmeticLinearRanker,
         "description": "Execute natural language arithmetic expressions.",
         "example": "How much is seven times three?",
         "data": arithmeticData
     },
+    "digits": {
+        "parser": digitParser,
+        "ranker": digitConstantRanker,
+        "description": "Parse numbers expressed in digits.",
+        "example": "12,034",
+        "data": digitData
+    },
     "numbers": {
         "parser": numberParser,
-        "ranker": numberRanker,
+        "ranker": numberLinearRanker,
         "description": "Parse numbers expressed in words.",
         "example": "one thousand twenty two",
         "data": numberData
     },
     "ordinals": {
         "parser": ordinalParser,
-        "ranker": ordinalRanker,
+        "ranker": ordinalLinearRanker,
         "description": "Parse ordinal numbers expressed in words",
         "example": "thirty third",
         "data": ordinalData
     },
-    "digits": {
-        "parser": digitParser,
-        "ranker": null,
-        "description": "Parse numbers expressed in digits.",
-        "example": "12,034",
-        "data": digitData
-    },
     "ignorables": {
         "parser": ignorableParser,
-        "ranker": null,
+        "ranker": ignorableConstantRanker,
         "description": "Parse a span in order to ignore it.",
         "example": "Hello, world!",
         "data": ignorableData

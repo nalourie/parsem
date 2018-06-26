@@ -4,9 +4,13 @@ import {
     arithmeticParser
 } from '../parsers/arithmetic';
 import {
+    digitParser,
     numberParser,
     ordinalParser
 } from '../parsers/numbers';
+import {
+    ignorableParser
+} from '../parsers/ignore';
 import {
     parseCountsFeaturizer,
     parsePrecedenceFeaturizer,
@@ -15,16 +19,17 @@ import {
     ConcatFeaturizer
 } from '../rank/featurize';
 import {
+    ConstantRanker,
     LinearRanker
 } from '../rank/ranker';
 
 
 /**
- * arithmeticRanker
- * ================
+ * arithmeticLinearRanker
+ * ======================
  * A parse re-ranker for arithmeticParser.
  */
-const arithmeticRanker = new LinearRanker(
+const arithmeticLinearRanker = new LinearRanker(
     new ConcatFeaturizer([
         parsePrecedenceFeaturizer,
         parseLengthsFeaturizer
@@ -35,11 +40,19 @@ const arithmeticRanker = new LinearRanker(
 
 
 /**
- * numberRanker
- * ============
+ * digitConstantRanker
+ * ===================
+* A parse re-ranker for digitParser.
+*/
+const digitConstantRanker = new ConstantRanker(null, {}, digitParser);
+
+
+/**
+ * numberLinearRanker
+ * ==================
  * A parse re-ranker for numberParser.
  */
-const numberRanker = new LinearRanker(
+const numberLinearRanker = new LinearRanker(
     new ConcatFeaturizer([
         parseCountsFeaturizer,
         parsePrecedenceFeaturizer,
@@ -51,11 +64,11 @@ const numberRanker = new LinearRanker(
 
 
 /**
- * ordinalRanker
- * =============
+ * ordinalLinearRanker
+ * ===================
  * A parse re-ranker for ordinalParser.
  */
-const ordinalRanker = new LinearRanker(
+const ordinalLinearRanker = new LinearRanker(
     new ConcatFeaturizer([
         parseCountsFeaturizer,
         parsePrecedenceFeaturizer,
@@ -66,8 +79,18 @@ const ordinalRanker = new LinearRanker(
 );
 
 
+/**
+ * ignorableConstantRanker
+ * =======================
+ * A parse re-ranker for ignorableParser.
+ */
+const ignorableConstantRanker = new ConstantRanker(null, {}, ignorableParser);
+
+
 export {
-    arithmeticRanker,
-    numberRanker,
-    ordinalRanker
+    arithmeticLinearRanker,
+    digitConstantRanker,
+    numberLinearRanker,
+    ordinalLinearRanker,
+    ignorableConstantRanker
 };

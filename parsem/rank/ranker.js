@@ -94,6 +94,28 @@ class Ranker {
 
 
 /**
+ * ConstantRanker
+ * ==============
+ * A ranker that scores all parses equally.
+ *
+ * `ConstantRanker` scores all parses equally. It's useful for wrapping
+ * parsers which don't require rankers when you just want a uniform
+ * interface.
+ *
+ * See `Ranker` for details.
+ */
+class ConstantRanker extends Ranker {
+    constructor(featurizer, weights, parser) {
+        super(featurizer, weights, parser);
+
+        this.score = (parse) => 0;
+
+        this.fit = (utterances, denotations) => {};
+    }
+}
+
+
+/**
  * LinearRanker
  * ============
  * Use linear regression to rank parses.
@@ -240,5 +262,6 @@ class LinearRanker extends Ranker {
 
 export {
     Ranker,
+    ConstantRanker,
     LinearRanker
 };
