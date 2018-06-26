@@ -20,7 +20,8 @@ import {
 } from '../rank/featurize';
 import {
     ConstantRanker,
-    LinearRanker
+    LinearRanker,
+    SoftmaxRanker
 } from '../rank/ranker';
 
 
@@ -31,6 +32,22 @@ import {
  */
 const arithmeticLinearRanker = new LinearRanker(
     new ConcatFeaturizer([
+        parsePrecedenceFeaturizer,
+        parseLengthsFeaturizer
+    ]),
+    {},
+    arithmeticParser
+);
+
+
+/**
+ * arithmeticSoftmaxRanker
+ * ======================
+ * A parse re-ranker for arithmeticParser.
+ */
+const arithmeticSoftmaxRanker = new SoftmaxRanker(
+    new ConcatFeaturizer([
+        parseCountsFeaturizer,
         parsePrecedenceFeaturizer,
         parseLengthsFeaturizer
     ]),
@@ -64,11 +81,43 @@ const numberLinearRanker = new LinearRanker(
 
 
 /**
+ * numberSoftmaxRanker
+ * ==================
+ * A parse re-ranker for numberParser.
+ */
+const numberSoftmaxRanker = new SoftmaxRanker(
+    new ConcatFeaturizer([
+        parseCountsFeaturizer,
+        parsePrecedenceFeaturizer,
+        parseDepthsFeaturizer
+    ]),
+    {},
+    numberParser
+);
+
+
+/**
  * ordinalLinearRanker
  * ===================
  * A parse re-ranker for ordinalParser.
  */
 const ordinalLinearRanker = new LinearRanker(
+    new ConcatFeaturizer([
+        parseCountsFeaturizer,
+        parsePrecedenceFeaturizer,
+        parseDepthsFeaturizer
+    ]),
+    {},
+    ordinalParser
+);
+
+
+/**
+ * ordinalSoftmaxRanker
+ * ===================
+ * A parse re-ranker for ordinalParser.
+ */
+const ordinalSoftmaxRanker = new SoftmaxRanker(
     new ConcatFeaturizer([
         parseCountsFeaturizer,
         parsePrecedenceFeaturizer,
@@ -89,8 +138,11 @@ const ignorableConstantRanker = new ConstantRanker(null, {}, ignorableParser);
 
 export {
     arithmeticLinearRanker,
+    arithmeticSoftmaxRanker,
     digitConstantRanker,
     numberLinearRanker,
+    numberSoftmaxRanker,
     ordinalLinearRanker,
+    ordinalSoftmaxRanker,
     ignorableConstantRanker
 };

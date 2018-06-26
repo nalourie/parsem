@@ -62,6 +62,11 @@ body {
     margin: 2rem 0rem;
 }
 
+.small-paragraph {
+    margin: 0.2rem 0rem 0.5rem 0rem;
+    font-size: 0.8rem;
+}
+
 .well {
     padding: 0.2rem 1rem;
     background-color: #eee;
@@ -79,6 +84,11 @@ body {
 }
 
 /* form */
+
+form ul {
+    list-style: none;
+    padding: 0;
+}
 
 select {
     margin: 5px 0px;
@@ -105,6 +115,12 @@ input.input {
     background-color: #8C215B;
     color: #fff;
 }
+
+.small-button {
+    padding: 2px 15px;
+    font-size: 1rem;
+}
+
 
 /* spinner / wait screen */
 

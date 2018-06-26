@@ -260,8 +260,197 @@ class LinearRanker extends Ranker {
 }
 
 
+/**
+ * SoftmaxRanker
+ * =============
+ * Use a softmax and marginal likelihood to rank parses.
+ *
+ * This ranker predicts the probability that a parse is correct by a
+ * softmax over the features for all the produced parses. This ranker is
+ * trained on denotations using SGD on the marginal likelihood of the
+ * correct denotation.  The loss is negative log-likelihood
+ * (cross-entropy) with l2 regularization.
+ *
+ * The score function returns logits.
+ *
+ * See `Ranker` for details.
+ */
+class SoftmaxRanker extends Ranker {
+    constructor(featurizer, weights, parser) {
+        super(featurizer, weights, parser);
+
+        this.score = (parse) => {
+            const features = this.featurizer.transform(parse);
+            let logit = 0;
+
+            for (let feature in features) {
+                const weight = this.weights[feature] || 0;
+                logit += weight * features[feature];
+            }
+
+            return logit;
+        }
+
+        this.fit = (utterances, denotations) => {
+            assert(
+                utterances.length === denotations.length,
+                "utterances and denotations must be of the same length."
+            );
+            const numSamples = utterances.length;
+
+            /**
+             * The ranker predicts logits from a linear function of the
+             * parse features, which when put through a softmax gives
+             * probabilities:
+             *
+             *   x_i // parse features
+             *   p_i = e^{W^T x_i} / \sum_{j=1}^{J} e^{W^T x_j}
+             *
+             * Since there are no fixed classes, adding a bias term
+             * doesn't make sense in this context. The learning
+             * objective is the l2 regularized negative log-likelihood
+             * for the correct denotation which we obtain by
+             * marginalizing out all the incorrect denotations:
+             *
+             *   p_d = \sum_{d=1}^D p_{i_d}
+             *
+             * Where $i_d$ indexes over parses with the correct
+             * denotation. The gradient is then:
+             *
+             *   \partial - \log(p_d) / \partial w_j =
+             *     - 1 / p_d (
+             *       \sum_{d=1}^D p_{i_d} (x_{i_d j}
+             *       - \sum_{j=1}^J p_j x_{jk})
+             *     )
+             *
+             * Where $x_{ij}$ denotes the j'th element of vector
+             * $x_i$. We apply the regularization separately in the
+             * standard weight decay style.
+             */
+
+            // hyperparams
+            const maxEpochs = 100;
+            const tol = 1e-4;
+            const learningRate = 1e-3;
+            const regularization = 1e-3;
+
+            // run the training epochs
+            for (let epoch = 0; epoch < maxEpochs; epoch++) {
+                // track the loss for the epoch vs the previous epoch
+                const oldLoss = curLoss || Infinity;
+                let curLoss = 0;
+
+                // randomly shuffle the data
+                const epochOrder = shuffle(range(numSamples));
+                const updateTimes = {};
+
+                // we need i after the loop ends to apply regularization.
+                let i;
+                for (i = 0; i < numSamples; i++) {
+                    const utterance = utterances[epochOrder[i]];
+                    const denotation = denotations[epochOrder[i]];
+
+                    // create [prob, features, correct, parse] tuples
+
+                    const expScoredParses = this.parser
+                          .parse(utterance)
+                          .map(p => [
+                              Math.exp(this.score(p)),
+                              this.featurizer.transform(p),
+                              equal(p.computeDenotation(), denotation),
+                              p
+                          ]);
+
+                    const normalizer = expScoredParses
+                          .reduce((acc, v) => acc + v[0], 0.0);
+
+                    // create the probability scored tuples
+                    const probScoredParses = expScoredParses
+                          .map(([expScore, features, correct, p]) => [
+                              expScore / normalizer,
+                              features,
+                              correct,
+                              p
+                          ]);
+
+                    // compute the probability of the correct denotation
+                    const denotationProb = probScoredParses
+                          .filter(([probScore, features, correct, p]) => correct)
+                          .reduce((acc, v) => acc + v[0], 0.0);
+
+                    // update the loss, i.e. the negative log likelihood
+                    // of the denotation
+                    curLoss += - Math.log(denotationProb);
+
+                    // construct the gradient
+
+                    // compute the average feature vector
+                    const averageFeatures = {}
+                    probScoredParses.forEach(([probScore, features, correct, p]) => {
+                        for (let feature in features) {
+                            if (!averageFeatures.hasOwnProperty(feature)) {
+                                averageFeatures[feature] = 0;
+                            }
+                            averageFeatures[feature] += probScore * features[feature];
+                        }
+                    });
+
+                    // compute the gradient
+                    const grad = {};
+                    probScoredParses
+                        .filter(([probScore, features, correct, p]) => correct)
+                        .forEach(([probScore, features, correct, p]) => {
+                            for (let feature in features) {
+                                if (!grad.hasOwnProperty(feature)) {
+                                    grad[feature] = 0;
+                                }
+                                grad[feature] += - (1 / denotationProb)
+                                    * probScore
+                                    * (features[feature] - averageFeatures[feature]);
+                            }
+                        });
+
+                    // apply the gradient update to the weights
+                    for (let feature in grad) {
+                        if (!this.weights.hasOwnProperty(feature)) {
+                            this.weights[feature] = 0;
+                        }
+
+                        const regularizationFactor = (
+                            1 - learningRate * regularization
+                        ) ** (i - (updateTimes[feature] || 0));
+
+                        // apply the regularization lazily
+                        this.weights[feature] *= regularizationFactor;
+
+                        // update with the gradient
+                        this.weights[feature] -= learningRate * grad[feature];
+
+                        updateTimes[feature] = i;
+                    }
+                }
+                // apply any unapplied regularization
+                for (let feature in this.weights) {
+                    const regularizationFactor = (
+                        1 - learningRate * regularization
+                    ) ** (i - (updateTimes[feature] || 0));
+
+                    this.weights[feature] *= regularizationFactor;
+                }
+
+                // check the tolerance
+                if (Math.abs(curLoss - oldLoss) <= tol) {
+                    return
+                }
+            }
+        }
+    }
+}
+
+
 export {
     Ranker,
     ConstantRanker,
-    LinearRanker
+    LinearRanker,
+    SoftmaxRanker
 };

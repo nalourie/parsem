@@ -41,30 +41,56 @@
       </div>
 
       <div id="demo-form" class="card">
+        <h2>Demo</h2>
+
+        <p>
+          This demo lets you run semantic parsers on your own text
+          input. Select a parser and a ranker, read the description and
+          then try it out! The "Parse" button will interpret and display
+          the semantics of the phrase. The "Train Ranker" button will
+          train the ranker so that the best interpretations come at the
+          top.
+        </p>
+
+        <h3>Parser Information</h3>
+
+        <p id="demo-parser-description"></p>
+
         <form>
-          <select id="demo-select-parser"></select>
-
-          <p id="demo-parser-description"></p>
-
-          <input
-            id="demo-input"
-            class="input"
-            name="parse-text"
-            type="text">
-          <input
-            id="demo-parse"
-            class="button"
-            type="submit"
-            value="Parse!">
-          <input
-            id="demo-rank"
-            class="button"
-            type="button"
-            value="Train Ranker">
+          <ul>
+            <li>
+              <label for="demo-select-parser">choose a parser:</label>
+              <select id="demo-select-parser"></select>
+            </li>
+            <li>
+              <label for="demo-select-ranker">choose a ranker:</label>
+              <select id="demo-select-ranker"></select>
+              <input
+                id="demo-rank"
+                class="button small-button"
+                type="button"
+                value="Train Ranker">
+              <p id="ranker-accuracy" class="small-paragraph"></p>
+            </li>
+            <li>
+              <input
+                id="demo-input"
+                class="input"
+                name="parse-text"
+                type="text">
+              <input
+                id="demo-parse"
+                class="button"
+                type="submit"
+                value="Parse!">
+            </li>
+          </ul>
         </form>
       </div>
 
       <div id="results" class="card">
+        <h3>Results</h3>
+
         <div class="well">
           <p>
             <strong>Input:</strong>
@@ -77,15 +103,6 @@
           <p>
             <strong>Other Interpretations:</strong>
             <span id="other-answers"></span>
-          </p>
-          <hr>
-          <p>
-            <strong>Train Accuracy:</strong>
-            <span id="ranker-train-accuracy"></span>
-          </p>
-          <p>
-            <strong>Test Accuracy:</strong>
-            <span id="ranker-test-accuracy"></span>
           </p>
         </div>
       </div>
@@ -101,17 +118,19 @@
         var parser = document
           .getElementById("demo-select-parser")
           .value;
+        var ranker = document
+          .getElementById("demo-select-ranker")
+          .value;
         var text = document
           .getElementById("demo-input")
           .value;
-        var results = parsers[parser]
-              .ranker
-              .rankedParses(text)
-              .map(([score, parse]) => parse.computeDenotation());
+        var results = parsers[parser].rankers[ranker]
+          .rankedParses(text)
+          .map(([score, parse]) => parse.computeDenotation());
         var topResult = results[0];
         var otherResults = Array.from(new Set(results))
-         .map(v => JSON.stringify(v))
-         .join(", ") || "Sorry, I didn't understand.";
+          .map(v => JSON.stringify(v))
+          .join(", ") || "Sorry, I didn't understand.";
 
         // clear the input
         document
@@ -139,14 +158,12 @@
         var parser = document
           .getElementById("demo-select-parser")
           .value;
+        var ranker = document
+          .getElementById("demo-select-ranker")
+          .value;
 
-        var ranker = parsers[parser].ranker;
+        var rankerObj = parsers[parser].rankers[ranker];
         var data = parsers[parser].data;
-
-        if (!ranker) {
-          alert(`No ranker is attached to ${parser}`);
-          return;
-        }
 
         // notify the user that we're fitting the ranker
         var curtain = document.createElement('div');
@@ -159,7 +176,7 @@
           .appendChild(curtain);
 
         // train the ranker
-        setTimeout(trainRanker, 1, ranker, data);
+        setTimeout(trainRanker, 1, rankerObj, data);
       }
 
       function trainRanker(ranker, data) {
@@ -208,19 +225,37 @@
 
         // update the UI
         document
-          .getElementById('ranker-train-accuracy')
-          .innerHTML = trainAccuracy.toString().slice(0,4);
+          .getElementById('ranker-accuracy')
+          .innerHTML = (
+            `<strong>train accuracy:</strong> ${trainAccuracy.toFixed(2)},`
+              + ` <strong>test accuracy:</strong> ${testAccuracy.toFixed(2)}.`
+          );
+      }
+
+      function setExampleRanker() {
         document
-          .getElementById('ranker-test-accuracy')
-          .innerHTML = testAccuracy.toString().slice(0,4);
+          .getElementById("ranker-accuracy")
+          .innerHTML = "The ranker has not yet been trained.";
       }
 
       function setExampleParser() {
         var parser = document
           .getElementById("demo-select-parser")
           .value;
+        var rankers = parsers[parser].rankers;
         var description = parsers[parser].description;
         var example = parsers[parser].example;
+
+        // add the rankers to the select field
+        document.getElementById("demo-select-ranker").innerHTML = "";
+        for (var ranker in rankers) {
+          var rankerOption = document.createElement('option');
+          rankerOption.value = ranker;
+          rankerOption.innerHTML = ranker;
+          document
+            .getElementById("demo-select-ranker")
+            .appendChild(rankerOption);
+        }
 
         // display the parser's description
         document
@@ -246,13 +281,7 @@
           .innerHTML = "Different possible computed semantics of the"
             + " text will go here.";
 
-        document
-          .getElementById("ranker-train-accuracy")
-          .innerHTML = "N/A";
-
-        document
-          .getElementById("ranker-test-accuracy")
-          .innerHTML = "N/A";
+        setExampleRanker();
       }
 
       // add the parsers to the select field
@@ -271,6 +300,10 @@
       document
         .getElementById("demo-select-parser")
         .addEventListener("change", setExampleParser);
+      // attach setExampleRanker to demo-select-ranker
+      document
+        .getElementById("demo-select-ranker")
+        .addEventListener("change", setExampleRanker);
 
       // attach submitDemoForm to the demo form
       document

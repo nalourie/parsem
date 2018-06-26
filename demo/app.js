@@ -21,9 +21,12 @@ import {
 } from '../parsem/parsers/ignore';
 import {
     arithmeticLinearRanker,
+    arithmeticSoftmaxRanker,
     digitConstantRanker,
     numberLinearRanker,
+    numberSoftmaxRanker,
     ordinalLinearRanker,
+    ordinalSoftmaxRanker,
     ignorableConstantRanker
 } from '../parsem/rankers/rankers';
 import {
@@ -40,35 +43,44 @@ window.shuffle = shuffle;
 window.parsers = {
     "arithmetic": {
         "parser": arithmeticParser,
-        "ranker": arithmeticLinearRanker,
+        "rankers": {
+            "linear": arithmeticLinearRanker,
+            "softmax": arithmeticSoftmaxRanker
+        },
         "description": "Execute natural language arithmetic expressions.",
         "example": "How much is seven times three?",
         "data": arithmeticData
     },
     "digits": {
         "parser": digitParser,
-        "ranker": digitConstantRanker,
+        "rankers": {"constant": digitConstantRanker},
         "description": "Parse numbers expressed in digits.",
         "example": "12,034",
         "data": digitData
     },
     "numbers": {
         "parser": numberParser,
-        "ranker": numberLinearRanker,
+        "rankers": {
+            "linear": numberLinearRanker,
+            "softmax": numberSoftmaxRanker
+        },
         "description": "Parse numbers expressed in words.",
         "example": "one thousand twenty two",
         "data": numberData
     },
     "ordinals": {
         "parser": ordinalParser,
-        "ranker": ordinalLinearRanker,
+        "rankers": {
+            "linear": ordinalLinearRanker,
+            "softmax": ordinalSoftmaxRanker
+        },
         "description": "Parse ordinal numbers expressed in words",
         "example": "thirty third",
         "data": ordinalData
     },
     "ignorables": {
         "parser": ignorableParser,
-        "ranker": ignorableConstantRanker,
+        "rankers": {"constant": ignorableConstantRanker},
         "description": "Parse a span in order to ignore it.",
         "example": "Hello, world!",
         "data": ignorableData
