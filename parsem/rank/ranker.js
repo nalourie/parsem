@@ -131,7 +131,7 @@ class LinearRanker extends Ranker {
             const alpha = 1;
 
             for (let epoch = 0; epoch < maxEpochs; epoch++) {
-                const oldLoss = curLoss || 0;
+                const oldLoss = curLoss || Infinity;
                 let curLoss = 0;
 
                 // randomly shuffle the data
