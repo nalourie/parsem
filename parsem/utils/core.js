@@ -156,7 +156,107 @@ suite('core', [
 ]);
 
 
+/**
+ * groupBy : (V => K) Array[V] => Map[K, V]
+ * ========================================
+ * Return a map from keys produced by `keyFunc` to the values in `arr`.
+ *
+ * Group the values in `arr` using the keys produced for each value by
+ * `keyFunc`, and then return a map from these keys to lists of their
+ * corresponding values.
+ *
+ * @param {V => K} keyFunc - the function producing a key for a given
+ *   value from the array.
+ * @param {Array[V]} arr - The array whose elements should be grouped.
+ */
+function groupBy(keyFunc, arr) {
+    const keyToValue = new Map();
+
+    for (let i = 0; i < arr.length; i++) {
+        const value = arr[i];
+        const key = keyFunc(value);
+
+        if (!keyToValue.has(key)) {
+            keyToValue.set(key, []);
+        }
+
+        keyToValue.get(key).push(value);
+    }
+
+    return keyToValue;
+}
+suite('core', [
+    test('groupBy', function () {
+        check(
+            "groupBy should produce an empty map for an empty array.",
+            equal(Array.from(groupBy(x => x, [])), [])
+        );
+        check(
+            "groupBy shouldn't group unique numbers.",
+            equal(
+                Array.from(groupBy(x => x, [1, 2, 3])),
+                [
+                    [1, [1]],
+                    [2, [2]],
+                    [3, [3]]
+                ]
+            )
+        );
+        check(
+            "groupBy should apply the key function.",
+            equal(
+                Array.from(groupBy(x => x - 1, [1, 2, 3])),
+                [
+                    [0, [1]],
+                    [1, [2]],
+                    [2, [3]]
+                ]
+            )
+        );
+        check(
+            "groupBy should group elements with the same key.",
+            equal(
+                Array.from(groupBy(
+                    x => x % 3,
+                    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                )),
+                [
+                    [0, [0, 3, 6, 9]],
+                    [1, [1, 4, 7, 10]],
+                    [2, [2, 5, 8]]
+                ]
+            )
+        );
+        check(
+            "groupBy should group strings correctly.",
+            equal(
+                Array.from(groupBy(
+                    x => x[0] || "",
+                    ["hi", "foo", "!", "how", "'s", "bar", "?"]
+                )),
+                [
+                    ["h", ["hi", "how"]],
+                    ["f", ["foo"]],
+                    ["!", ["!"]],
+                    ["'", ["'s"]],
+                    ["b", ["bar"]],
+                    ["?", ["?"]]
+                ]
+            )
+        );
+        check(
+            "groupBy should treat functions as distinct.",
+            equal(
+                Array.from(groupBy(w => w, [x => x, y => y, z => z])).length,
+                3
+            )
+        );
+    })
+]);
+
+
 export {
     range,
-    zip
+    zip,
+    groupBy
 };
