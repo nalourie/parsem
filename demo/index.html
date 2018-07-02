@@ -125,8 +125,8 @@
           .getElementById("demo-input")
           .value;
         var results = parsers[parser].rankers[ranker]
-          .rankedParses(text)
-          .map(([score, parse]) => parse.computeDenotation());
+          .scoresAndDenotations(text)
+          .map(([score, denotation]) => denotation);
         var topResult = results[0];
         var otherResults = Array.from(new Set(results))
           .map(v => JSON.stringify(v))
@@ -209,13 +209,13 @@
         // compute train / test accuracy
         var trainAccuracy = accuracy(
               trainUtterances.map(
-                s => ranker.topParse(s).computeDenotation()
+                s => ranker.topDenotation(s)
               ),
               trainDenotations
         );
         var testAccuracy = accuracy(
               testUtterances.map(
-                s => ranker.topParse(s).computeDenotation()
+                s => ranker.topDenotation(s)
               ),
               testDenotations
         );

@@ -6,43 +6,60 @@ import {
 } from '../utils/abstract';
 import { assert } from '../utils/assert';
 import { equal } from '../utils/compare';
-import { range } from '../utils/core';
+import { range, groupBy } from '../utils/core';
 import { shuffle } from '../utils/random';
 
 
 /**
  * Ranker
  * ======
- * A ranker ranks parses.
+ * A ranker ranks parses and denotations.
  *
  * `Ranker` is an abstract base class. Inherit from `Ranker` to create a
- * Ranker class.
+ * Ranker class. Rankers produce scores for all the parses or all the
+ * denotations produced by a parser.
+ *
+ * Note that the scores are not necessarily probabilities and only must
+ * satisfy that higher scores mean better parses or denotations.
+ * Similarly, the denotation scores are not necessarily comparable to
+ * the individual parse scores and how they're computed depends on the
+ * ranker.
+ *
+ * Subclasses must implement the `fit`, `scoresAndParses`, and
+ * `scoresAndDenotations` methods in whatever way makes the most sense
+ * for that particular model.
  *
  * Methods
  * -------
- * score : Parse -> Number
- *   Return a score for a parse giving the probability of the parse.
- *
- *   @param {Parse} parse - the parse to score.
- *
  * fit : Array[String] Array[Any] -> undefined
- *   Fit the ranker to the data in data and labels.
+ *   Fit the ranker to the utterances and denotations.
  *
  *   @param {Array[String]} utterances - an array of strings
  *     representing utterances.
  *   @param {Array[Any]} denotations - an array of data representing the
- *     denotations of the utterances in data.
+ *     denotations of the utterances.
  *
- * rankedParses : String -> Array[(Number, Parse)]
+ * scoresAndParses : String -> Array[(Number, Parse)]
  *   Return a sorted list of (score, parse) pairs, with the best parse
  *     first.
  *
  *   @param {String} s - the string to parse.
  *
+ * scoresAndDenotations : String -> Array[(Number, Any)]
+ *   Return a sorted list of (score, denotation) pairs, with the best
+ *     denotation first.
+ *
+ *   @param {String} s - the string for which to compute denotations.
+ *
  * topParse : String -> Parse
  *   Return the top parse for a string.
  *
  *   @param {String} s - the string to parse.
+ *
+ * topDenotation : String -> Any
+ *   Return the top denotation for a string.
+ *
+ *   @param {String} s - the string for which to compute denotations.
  *
  * Attributes
  * ----------
@@ -60,7 +77,8 @@ class Ranker {
     constructor(featurizer, weights, parser) {
         if (this.constructor === Ranker) {
             throw new AbstractClassError(
-                "Ranker is an abstract class. It should not be instantiated."
+                "Ranker is an abstract class. It should not be"
+                  + " instantiated."
             );
         }
 
@@ -68,26 +86,32 @@ class Ranker {
         this.weights = weights;
         this.parser = parser;
 
-        this.score = (parse) => {
-            throw new NotImplementedError(
-                "Ranker subclasses must implement a score method."
-            );
-        }
-
         this.fit = (utterances, denotations) => {
             throw new NotImplementedError(
                 "Ranker subclasses must implement a fit method."
             );
         }
 
-        this.rankedParses = (s) => {
-            return this.parser.parse(s)
-                .map(p => [this.score(p), p])
-                .sort((a, b) => b[0] - a[0])
+        this.scoresAndParses = (s) => {
+            throw new NotImplementedError(
+                "Ranker subclasses must implement a scoresAndParses"
+                  + " method."
+            );
+        }
+
+        this.scoresAndDenotations = (s) => {
+            throw new NotImplementedError(
+                "Ranker subclasses must implement a"
+                  + " scoresAndDenotations method."
+            );
         }
 
         this.topParse = (s) => {
-            return this.rankedParses(s)[0][1]
+            return this.scoresAndParses(s)[0][1];
+        }
+
+        this.topDenotation = (s) => {
+            return this.scoresAndDenotations(s)[0][1];
         }
     }
 }
@@ -108,9 +132,17 @@ class ConstantRanker extends Ranker {
     constructor(featurizer, weights, parser) {
         super(featurizer, weights, parser);
 
-        this.score = (parse) => 0;
-
         this.fit = (utterances, denotations) => {};
+
+        this.scoresAndParses = (s) => {
+            return this.parser.parse(s)
+                .map(p => [0, p]);
+        }
+
+        this.scoresAndDenotations = (s) => {
+            return this.parser.parse(s)
+                .map(p => [0, p.computeDenotation()]);
+        }
     }
 }
 
@@ -126,7 +158,8 @@ class LinearRanker extends Ranker {
     constructor(featurizer, weights, parser) {
         super(featurizer, weights, parser);
 
-        this.score = (parse) => {
+        // create a private function which produces the score
+        const getScore = (parse) => {
             const features = this.featurizer.transform(parse);
             let output = 0;
 
@@ -172,7 +205,7 @@ class LinearRanker extends Ranker {
                     const scoredParses = this.parser
                           .parse(utterance)
                           .map(p => [
-                              this.score(p),
+                              getScore(p),
                               equal(p.computeDenotation(), denotation),
                               p
                           ]);
@@ -256,6 +289,36 @@ class LinearRanker extends Ranker {
                 }
             }
         }
+
+        this.scoresAndParses = (s) => {
+            return this.parser.parse(s)
+                .map(p => [getScore(p), p])
+                .sort((a, b) => b[0] - a[0]);
+        }
+
+        this.scoresAndDenotations = (s) => {
+            // compute scores for each parse and the corresponding
+            // denotation for that parse, without aggregating the
+            // denotation scores
+            const scoredParseDenotations = this.scoresAndParses(s)
+                  .map(([score, p]) => [score, p.computeDenotation()]);
+
+            // aggregate the denotation's scores
+            const scoredDenotations = Array.from(
+                groupBy(
+                    ([score, denotation]) => denotation,
+                    scoredParseDenotations))
+                .map(([denotation, scoreAndDenotationPairs]) => [
+                    scoreAndDenotationPairs.reduce(
+                        (acc, [score, denotation]) => Math.max(acc, score),
+                        -Infinity
+                    ),
+                    denotation
+                ])
+                .sort((a, b) => b[0] - a[0]);
+
+            return scoredDenotations;
+        }
     }
 }
 
@@ -271,7 +334,8 @@ class LinearRanker extends Ranker {
  * correct denotation.  The loss is negative log-likelihood
  * (cross-entropy) with l2 regularization.
  *
- * The score function returns logits.
+ * The scores returned for the parses and denotations are
+ * (uncalibrated) probability scores.
  *
  * See `Ranker` for details.
  */
@@ -279,7 +343,9 @@ class SoftmaxRanker extends Ranker {
     constructor(featurizer, weights, parser) {
         super(featurizer, weights, parser);
 
-        this.score = (parse) => {
+        // create a private function which produces the unnormalized
+        // probability for a parse
+        const getExpScore = (parse) => {
             const features = this.featurizer.transform(parse);
             let logit = 0;
 
@@ -288,7 +354,7 @@ class SoftmaxRanker extends Ranker {
                 logit += weight * features[feature];
             }
 
-            return logit;
+            return Math.exp(logit);
         }
 
         this.fit = (utterances, denotations) => {
@@ -355,7 +421,7 @@ class SoftmaxRanker extends Ranker {
                     const expScoredParses = this.parser
                           .parse(utterance)
                           .map(p => [
-                              Math.exp(this.score(p)),
+                              getExpScore(p),
                               this.featurizer.transform(p),
                               equal(p.computeDenotation(), denotation),
                               p
@@ -443,6 +509,41 @@ class SoftmaxRanker extends Ranker {
                     return
                 }
             }
+        }
+
+        this.scoresAndParses = (s) => {
+            const expScoredParses = this.parser.parse(s)
+                .map(p => [getExpScore(p), p]);
+            const normalizer = expScoredParses
+                  .reduce((acc, [expScore, p]) => acc + expScore, 0);
+
+            return expScoredParses
+                .map(([score, p]) => [score / normalizer, p])
+                .sort((a, b) => b[0] - a[0]);
+        }
+
+        this.scoresAndDenotations = (s) => {
+            // compute scores for each parse and the corresponding
+            // denotation for that parse, without aggregating the
+            // denotation scores
+            const scoredParseDenotations = this.scoresAndParses(s)
+                  .map(([score, p]) => [score, p.computeDenotation()]);
+
+            // aggregate the denotation's scores
+            const scoredDenotations = Array.from(
+                groupBy(
+                    ([score, denotation]) => denotation,
+                    scoredParseDenotations))
+                .map(([denotation, scoreDenotationPairs]) => [
+                    scoreDenotationPairs.reduce(
+                        (acc, [score, denotation]) => acc + score,
+                        0
+                    ),
+                    denotation
+                ])
+                .sort((a, b) => b[0] - a[0]);
+
+            return scoredDenotations;
         }
     }
 }
