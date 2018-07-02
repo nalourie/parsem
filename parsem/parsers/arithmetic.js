@@ -48,7 +48,7 @@ const arithmeticData = [
     // langauge that has to be ignored
     ["what is five minus one", 4],
     ["What is one plus five?", 6],
-    ["Three minus seven times two is how much?", -8],
+    ["Three minus seven times two is how much?", -11],
     ["Say, how much is six times five?", 30],
     ["what is 43 plus 21?", 64],
     ["How about 4 plus seven?", 11],
