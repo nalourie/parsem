@@ -162,7 +162,7 @@ at [my website][my-website].
 
 [sempre]: https://github.com/percyliang/sempre
 [sippycup]: https://github.com/wcmac/sippycup
-[demo-link]: http://nicholaslourie.com/parsem/
+[demo-link]: http://parsem.nicholaslourie.com/
 [parsers-dir]: ./parsem/parsers/
 [arithmetic-file]: ./parsem/parsers/arithmetic.js
 [numbers-file]: ./parsem/parsers/numbers.js
