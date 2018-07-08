@@ -19,6 +19,10 @@ module.exports = {
                 to: 'index.html'
             },
             {
+                from: 'demo/error.html',
+                to: 'error.html'
+            },
+            {
                 from: 'demo/style.css',
                 to: 'style.css'
             }
