@@ -11,7 +11,12 @@ import { Grammar } from '../grammar/grammar';
 import { checkParser } from '../parse/parse';
 
 import { ignorableParser } from './ignore';
-import { digitParser, numberParser, ordinalParser } from './numbers';
+import {
+    digitParser,
+    ordinalDigitParser,
+    numberParser,
+    ordinalParser
+} from './numbers';
 
 
 /**
@@ -61,12 +66,17 @@ const arithmeticData = [
     ["What is two to the third power?", 8],
     ["What is two to the three?", 8],
     ["What is two to the power of 3?", 8],
+    ["What is 4 to the second?", 16],
+    ["What is 12 to the 2nd?", 144],
+    ["What is 12 to the 2nd power?", 144],
     // other
     ["How much is six times three minus four?", 14],
     ["Tell me what six minus three times four is?", -6],
     ["What's five minus three to the second power?", -4],
     ["Two subtracted from eight times two.", 14],
-    ["One minus two times three.", -5]
+    ["One minus two times three.", -5],
+    ["How much is 2 times 3 to the 3rd plus four?", 58],
+    ["What's 2 times three squared minus minus one?", 19]
 ]
 
 
@@ -78,7 +88,7 @@ const arithmeticData = [
 const arithmeticParser = new Grammar(
     ["$Root"],
     basicTokenizer,
-    [digitParser, numberParser, ordinalParser, ignorableParser],
+    [digitParser, ordinalDigitParser, numberParser, ordinalParser, ignorableParser],
     [
         // define a valid parse
         new Rule(
@@ -184,7 +194,7 @@ const arithmeticParser = new Grammar(
         ),
         new Rule(
             'powerOrdinal',
-            '$Expr', '$Expr to the $Ordinal power',
+            '$Expr', '$Expr to the $Ordinal ?power',
             (v, w, x, y, z) => v ** y
         ),
         new Rule(

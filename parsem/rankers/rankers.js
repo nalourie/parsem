@@ -16,7 +16,8 @@ import {
     parsePrecedenceFeaturizer,
     parseDepthsFeaturizer,
     parseLengthsFeaturizer,
-    ConcatFeaturizer
+    ConcatFeaturizer,
+    allFeaturizer
 } from '../rank/featurize';
 import {
     ConstantRanker,
@@ -46,11 +47,7 @@ const arithmeticLinearRanker = new LinearRanker(
  * A parse re-ranker for arithmeticParser.
  */
 const arithmeticSoftmaxRanker = new SoftmaxRanker(
-    new ConcatFeaturizer([
-        parseCountsFeaturizer,
-        parsePrecedenceFeaturizer,
-        parseLengthsFeaturizer
-    ]),
+    allFeaturizer,
     {},
     arithmeticParser
 );

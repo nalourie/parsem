@@ -84,10 +84,10 @@ class DigitParser extends Parser {
 
         // attributes
 
-        // match numers that either are in comma separated form or have
+        // match numbers that either are in comma separated form or have
         // no commas, and that optionally have a decimal point, and
         // optionally have a punction mark (.,?!;) at the end.
-        this.numRegex = /^(\d{1,3}(\,\d{3})*|\d+)?(\.\d*)?[.,?!;]?$/
+        this.numRegex = /^(\d{1,3}(\,\d{3})*|\d+)?(\.\d*)?[.,?!;]?$/;
     }
 }
 const digitParser = new DigitParser(["$Number"]);
@@ -115,6 +115,132 @@ suite('numbers', [
             'digitParser',
             digitParser,
             digitData,
+            1
+        );
+    })
+]);
+
+
+/**
+ * OrdinalParse
+ * ============
+ * A parse representing an ordinal.
+ *
+ * See `Parse` for methods and attributes.
+ */
+class OrdinalParse extends Parse {
+    constructor(span, semantics) {
+        super("ordinal", "$Ordinal", span, [], semantics);
+
+        // methods
+
+        // attributes
+    }
+}
+
+
+/**
+ * ordinalDigitData : Array[(String, Int)]
+ * =======================================
+ * An array of data for parsing ordinals written out with digits.
+ *
+ * `ordinalDigitData` contains utterance - denotation pairs for strings
+ * representing ordinals written out using digits.
+ */
+const ordinalDigitData = [
+    // integers
+    ["1st", 1],
+    ["2nd", 2],
+    ["3rd", 3],
+    ["5th", 5],
+    ["7th", 7],
+    // ordinals with commas
+    ["12,000th", 12000]
+];
+
+
+/**
+ * OrdinalDigitParser
+ * ==================
+ * A parser for parsing ordinals represented by digits.
+ *
+ * `OrdinalDigitParser` can parse input such as `1st` or `53rd`.
+ *
+ * Methods
+ * -------
+ * parse : String Optional[[String]] -> [OrdinalParse]
+ *   Convert a string to a list of ordinal parses. If the string is not
+ *   formed of digits with some ordinal identifier ('st', 'rd', or
+ *   'th'), then `parse` will return an empty list.
+ */
+class OrdinalDigitParser extends Parser {
+    constructor(roots) {
+        super(roots);
+
+        // methods
+
+        this.parse = (s, roots = this.roots) => {
+            let parses;
+            if (this.ordRegex.test(s)) {
+                const ord = parseFloat(
+                    s.replace('st', '')
+                     .replace('nd', '')
+                     .replace('rd', '')
+                     .replace('th', '')
+                     .replace(',', '')
+                );
+                parses = [new OrdinalParse(s, () => ord)];
+            } else {
+                parses = [];
+            }
+            return parses;
+        }
+
+        // attributes
+
+        // match ordinals that are either in comma separated form or
+        // have no commas, have an ordinal identifier (st, nd, rd, th)
+        // and that optionally have a punctuation mark at the end.
+        this.ordRegex = /^(\d{1,3}(\,\d{3})*|\d+)(st|nd|rd|th)[.,?!;]?$/;
+    }
+}
+const ordinalDigitParser = new OrdinalDigitParser(["$Ordinal"]);
+suite('numbers', [
+    test('ordinalDigitParser.parse', function () {
+        // check that the ordinalDigitParser rejects certain non-ordinals
+        check(
+            "ordinalDigitParser.parse should not parse numbers",
+            ordinalDigitParser.parse("12").length === 0
+        );
+        check(
+            "ordinalDigitParser.parse should not parse numbers with trailing characters.",
+            ordinalDigitParser.parse("12a").length === 0
+        );
+        check(
+            "ordinalDigitParser.parse should not parse numbers with leading characters.",
+            ordinalDigitParser.parse("b12").length === 0
+        );
+        check(
+            "ordinalDigitParser.parse should not parse numbers with spaces.",
+            ordinalDigitParser.parse("12 1").length === 0
+        );
+        check(
+            "ordinalDigitParser.parse should not parse non-numbers.",
+            ordinalDigitParser.parse("foo").length === 0
+        );
+        check(
+            "ordinalDigitParser.parse should not parse ordinals with leading characters.",
+            ordinalDigitParser.parse("b12th").length === 0
+        );
+        check(
+            "ordinalDigitParser.parse should not parse ordinals with spaces.",
+            ordinalDigitParser.parse("12 1st").length === 0
+        );
+        // check ordinalDigitParser on ordinalDigitData
+        checkParser(
+            'ordinalDigitParser',
+            ordinalDigitParser,
+            ordinalDigitData,
             1
         );
     })
@@ -646,6 +772,10 @@ export {
     digitData,
     DigitParser,
     digitParser,
+    OrdinalParse,
+    ordinalDigitData,
+    OrdinalDigitParser,
+    ordinalDigitParser,
     numberData,
     numberParser,
     ordinalData,
