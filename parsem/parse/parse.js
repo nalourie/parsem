@@ -4,7 +4,7 @@ import {
     AbstractClassError,
     NotImplementedError,
 } from '../utils/abstract';
-import { isType } from '../utils/compare';
+import { isType, equal } from '../utils/compare';
 import { assert } from '../utils/assert';
 import { check } from '../utils/test';
 
@@ -168,13 +168,13 @@ function checkParser(
             check(
                 `${parserName} shouldn't produce too many parses`
                     + ` on "${utterance}".`,
-                parses.length <= 25
+                parses.length <= maxNumParses
             );
 
             // make sure that the correct denotation is present
             const hasDenotation = parses
                   .map(p => p.computeDenotation())
-                  .some(v => v === denotation);
+                  .some(v => equal(v, denotation));
 
             check(
                 `${parserName} should produce a parse with`
